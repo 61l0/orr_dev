@@ -49,8 +49,8 @@ $active_group = 'default';
 $active_record = TRUE;
 
 $db['default']['hostname'] = 'localhost';
-$db['default']['username'] = 'root';
-$db['default']['password'] = 'w3bb4ngd4890';
+$db['default']['username'] = 'user';
+$db['default']['password'] = 'password';
 $db['default']['database'] = 'idaf';
 $db['default']['dbdriver'] = 'mysql';
 $db['default']['dbprefix'] = '';
@@ -65,8 +65,8 @@ $db['default']['autoinit'] = TRUE;
 $db['default']['stricton'] = FALSE;
 
 $db['renja_bappenas']['hostname'] = 'localhost';
-$db['renja_bappenas']['username'] = 'root';
-$db['renja_bappenas']['password'] = 'w3bb4ngd4890';
+$db['renja_bappenas']['username'] = 'user';
+$db['renja_bappenas']['password'] = 'password';
 $db['renja_bappenas']['database'] = 'renjakl';
 $db['renja_bappenas']['dbdriver'] = 'mysql';
 $db['renja_bappenas']['dbprefix'] = '';

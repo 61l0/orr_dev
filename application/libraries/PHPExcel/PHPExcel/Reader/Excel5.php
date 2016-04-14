@@ -2006,7 +2006,6 @@ class PHPExcel_Reader_Excel5 extends PHPExcel_Reader_Abstract implements PHPExce
 	 */
 	private function _readXf()
 	{
-
 		$length = self::_GetInt2d($this->_data, $this->_pos + 2);
 		$recordData = $this->_readRecordData($this->_data, $this->_pos + 4, $length);
 
@@ -2038,10 +2037,9 @@ class PHPExcel_Reader_Excel5 extends PHPExcel_Reader_Abstract implements PHPExce
 				// we set the general format code
 				$numberformat = array('code' => 'General');
 			}
- 			return false;	
- 			$objStyle->getNumberFormat()->setFormatCode($numberformat['code']);
+			$objStyle->getNumberFormat()->setFormatCode($numberformat['code']);
 
- 			// offset:  4; size: 2; XF type, cell protection, and parent style XF
+			// offset:  4; size: 2; XF type, cell protection, and parent style XF
 			// bit 2-0; mask 0x0007; XF_TYPE_PROT
 			$xfTypeProt = self::_GetInt2d($recordData, 4);
 			// bit 0; mask 0x01; 1 = cell is locked
@@ -3484,7 +3482,6 @@ class PHPExcel_Reader_Excel5 extends PHPExcel_Reader_Abstract implements PHPExce
 				$this->_phpSheet->getColumnDimensionByColumn($i)->setOutlineLevel($level);
 				$this->_phpSheet->getColumnDimensionByColumn($i)->setCollapsed($isCollapsed);
 				$this->_phpSheet->getColumnDimensionByColumn($i)->setXfIndex($this->_mapCellXfIndex[$xfIndex]);
-				return false;	
 			}
 		}
 	}
