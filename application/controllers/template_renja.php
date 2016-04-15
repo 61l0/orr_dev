@@ -362,6 +362,11 @@ class template_renja extends CI_Controller {
 		$this->load->model("template_renja_model");     
 		return $this->template_renja_model->get_file_name($id);    
 	}
+	function get_field($id="",$field=""){
+		$this->load->model("template_renja_model");     
+		return $this->template_renja_model->get_field($id,$field);    
+		
+	}
 	function download_app($id=""){
 		$this->load->helper('download');
 		$url_file=$this->get_url_file($id);
@@ -370,6 +375,15 @@ class template_renja extends CI_Controller {
 		$name = $nama_file;
 		force_download($name, $data);
 	}
+	function download_db_rkakl($value=''){
+		$this->load->helper('download');
+		$url_file=$this->get_field($value,"db_rkakl");
+  		$nama_file=$this->get_field($value,"judul");
+		$data = file_get_contents("uploads/".$url_file); // Read the file's contents
+		$name = $nama_file;
+		//force_download($name, $data);
+		redirect ("uploads/".$url_file);
+ 	}
 	function rekap_renja($id=""){
 		$this->load->model("template_renja_model"); 
 		$data['judul']='Rekap Renja';
@@ -453,6 +467,14 @@ class template_renja extends CI_Controller {
 	}
 	function export_now(){
 		$this->load->model("template_renja_model"); 
+		$mix_kode=$this->input->post('mix_kode');
+		if($mix_kode=="1"){
+			$data['colspan']=4;
+			$data['colspan2']=2;
+		} else {
+			$data['colspan']=3;
+			$data['colspan2']=1;
+		}
 		$data['t_sum_bo_01']=$this->input->post('t_sum_bo_01');
 		$data['t_sum_bo_02']=$this->input->post('t_sum_bo_02');
 		$data['t_sum_bno_rm_p']=$this->input->post('t_sum_bno_rm_p');
