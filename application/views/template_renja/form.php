@@ -112,13 +112,13 @@ function add_tiny_mce(){
 	    	<td colspan="4">
  	    	 <br>
 	    	 <fieldset style="border:2px solid #dedede !important;padding-left:10px !important;padding-bottom:10px !important">
-	    	 <legend style="font-size:15px;font-weight:bold;width:15%;margin-left:3px;margin-bottom:0px"> &nbsp;Opsi Export Data Renja</legend>
+	    	 <legend style="font-size:15px;font-weight:bold;width:15%;margin-left:3px;margin-bottom:0px"> &nbsp;Opsi Import Data Renja</legend>
 	    	<i class="glyphicon glyphicon-edit"></i> <input onchange="return show_isi_langsung()" style="margin-top:13px" checked="checked" value="0" type="radio" name="opsi_export" id="r_export_none">  
 	    	 Lakukan Pengisian Langsung  <br>
 
 	    	<i class="glyphicon glyphicon-calendar"></i>
 	    	<input style="margin-top:13px"
-	    	onchange="return show_export_from_past()" value="0" type="radio" name="opsi_export" id="r_export_from_past">  Export Dari Renja ( Tahun ) Yang Tersedia  <br>
+	    	onchange="return show_export_from_past()" value="0" type="radio" name="opsi_export" id="r_export_from_past">  Import Dari Renja ( Tahun ) Yang Tersedia  <br>
 	    	 
 	    	<i class="glyphicon glyphicon-upload"></i> <input 
 	    	onchange="return show_export_from_excel()" style="margin-top:13px" type="radio" name="opsi_export" value='1'

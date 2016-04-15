@@ -14,7 +14,12 @@ function formatDollar(num) {
 function refresh_table(){
 	$("#btn_export").hide();	
 	$("#btn_refresh").hide();	
-
+var mix_kode=$('#mix_kode').is(':checked'); 
+ 	if(mix_kode==0){
+ 		$(".td_program").attr('colspan',3);
+ 	} else {
+ 		$(".td_program").attr('colspan',4);
+ 	}
 	var sum_bo_01 =0;
 	var sum_bo_02 =0;
 	var sum_bno_rm_p =0;
@@ -147,22 +152,29 @@ function refresh_table(){
 		<input type="hidden" id="t_sum_bno_phln_d" name="t_sum_bno_phln_d" value="0">
 		<input type="hidden" id="t_sum_bno_pnbp" name="t_sum_bno_pnbp" value="0">
 		<input type="hidden" id="t_sum_pagu" name="t_sum_pagu" value="0">
-
- 		<?php echo $tahun_anggaran;?> &nbsp;   <?php echo $get_direktorat;?>   &nbsp;  &nbsp; <?php echo $pengkodean;?> 
- 		<button class="btn-sm btn btn-success pull-right" id="btn_export"> <i class="glyphicon glyphicon-export"></i>  Export To Excel </button>
- 		<a class="btn-sm btn btn-warning" onclick="return refresh_table()" id="btn_refresh"> <i class="glyphicon glyphicon-refresh"></i>  Refresh</a>
+		<table class="table " style="width:100%;margin-bottom:0px">
+			<tr>
+				<td style="width:450px"><label class="btn btn-primary btn-sm"> <input onchange="return refresh_table()" value="1" type="checkbox" name="mix_kode" id="mix_kode"> &nbsp; Tampilkan Kode "RKAKL" dan "KEUANGAN" &nbsp; </label> 
+				 <?php echo $tahun_anggaran;?></td>
+				<td><?php echo $get_direktorat;?></td>
+				<td><?php echo $pengkodean;?> &nbsp;<a class="btn-sm btn btn-warning" onclick="return refresh_table()" id="btn_refresh"> <i class="glyphicon glyphicon-refresh"></i>   </a></td>
+				<td> </td>
+				
+				<td><button class="btn-sm btn btn-success pull-right" id="btn_export"> <i class="glyphicon glyphicon-export"></i>  Export To Excel </button></td>
+			</tr>	
+		</table>
+  		
+ 		
 </form>  
 
 <div id="tabledata" style="padding-top:3px">
 <table id="table_renja" class="table multimedia table-striped table-hover table-bordered" style="width:100%;">
   	<tr>
- 	<td colspan="15">
+ 	<td colspan="16">
  		<table style="width:40%;font-size:12px">
     	<tr>
-    		<td><div style='height:15px;width:15px;background-color:#2C802C;float:left'></div> &nbsp; Indikator</td>
-    	 
-    		<td><div style='height:15px;;width:15px;background-color:#31BC86;float:left'></div> &nbsp;  Komponen Input</td>
-    	 
+    		<td><div style='height:15px;width:15px;background-color:#2C802C;float:left'></div> &nbsp; Indikator</td>    	 
+    		<td><div style='height:15px;;width:15px;background-color:#31BC86;float:left'></div> &nbsp;  Komponen Input</td>    	 
     		<td><div style='height:15px;width:15px;background-color:#BED446;float:left'></div> &nbsp;  Sub Komponen Input</td>
     	</tr>
     </table>
@@ -170,7 +182,7 @@ function refresh_table(){
  	</tr>
      <thead>
             <td class="hulu" rowspan = 4>KODE</td>          
-            <td class="hulu"  rowspan = 4 colspan = 3>PROGRAM / <br> KEGIATAN / INDIKATOR /  <br> KOMPONEN INPUT</td>
+            <td   class="hulu td_program"  rowspan = 4 colspan = 3>PROGRAM / <br> KEGIATAN / INDIKATOR /  <br> KOMPONEN INPUT</td>
             <td class="hulu" rowspan = 4 >SASARAN PROGRAM (OUTCOME)  <br> / SASARAN KEGIATAN (OUTPUT)</td>
             <td class="hulu" style="width:50px !important" rowspan = 4>TARGET</td> 
             <td class="hulu" colspan = 8>RENCANA PAGU TAHUN 2016 (Rp. X 1000)</td> 
@@ -199,7 +211,7 @@ function refresh_table(){
     <tbody>
 			<tr>
 				<td  class="hulu2">06</td>
-				<td  class="hulu2" colspan='3'><a style="cursor:pointer;text-decoration:none" 
+				<td  class="hulu2 td_program" colspan='3'><a style="cursor:pointer;text-decoration:none" 
 				onclick="return show_budak()">PROGRAM BINA PEMBANGUNAN DAERAH  <span style="font-size:10px;text-decoration:italic">(show detail)</span></a></td>
 				<td  class="hulu2"> </td>
 				<td  class="hulu2"> </td>
