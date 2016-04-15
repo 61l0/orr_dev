@@ -32,7 +32,7 @@ class template_renja_model extends CI_Model
 			}
      }     
     function count(){
-			$status_user=$this->session->userdata('STATUS');
+		$status_user=$this->session->userdata('STATUS');
      		$sql="";
      		$dari=$this->session->userdata('ID_DIREKTORAT');
      		$tujuan=$this->session->userdata('ID_DIREKTORAT');
@@ -55,6 +55,15 @@ class template_renja_model extends CI_Model
 	function get_row($id=""){
 		$query=$this->db->query("select * from data_template_renja where id='$id'");
 		return $query->row();
+	}
+	function get_field($id="",$field=""){
+		$query=$this->db->query("select ".$field." from log_template_renja where id='$id'");
+ 			 if ($query->num_rows() > 0) {
+				foreach ($query->result() as $data) {
+					$menus=$data->$field;
+				}
+				return $menus;
+			}
 	}
  	function get_url_file($id=""){
  		$query=$this->db->query("select a.url  from template_renja a where id='$id'");
@@ -119,7 +128,8 @@ class template_renja_model extends CI_Model
 	function filter_get_pengkodean(){
 		$sql="";   	 
 		$select="";
-		$select.="<select id='pengkodean' class='form-control input-sm' onchange='return refresh_table()' style='width:300px;float:left;margin-left:10px'  name='pengkodean'>";
+		$select.="<select id='pengkodean' class='form-control input-sm' onchange='return refresh_table()' 
+		style='padding-top:5px;width:200px;float:left;margin-left:10px'  name='pengkodean'>";
  		$select.="<option  value=''>Pilih Data Mapping</option>";
  		$q2 = $this->db->query("select *  from mapping order by id asc");
 		if ($q2->num_rows() > 0) {
@@ -158,7 +168,7 @@ class template_renja_model extends CI_Model
 			$selected="selected='selected'";
 		}
 		$select.="
-		<select id='unit' class='form-control input-sm' onchange='return refresh_table()' style='width:300px;float:left' name='unit'>";
+		<select id='unit' class='form-control input-sm' onchange='return refresh_table()' style='width:100%;float:left' name='unit'>";
  		if($this->session->userdata('PUSAT')=="1"){
  			$select.="<option value=''>-Pilih Direktorat / Semua-</option>";
  		}
@@ -177,7 +187,7 @@ class template_renja_model extends CI_Model
 	function filter_tahun_anggaran(){
 		$select="";
 		$select.="<select id='tahun_anggaran' onchange='return refresh_table()' class='form-control input-sm' 
-		style='width:20%;font-size:15px;padding:5px;margin-right:10px;float:left' name='tahun_anggaran'>";
+		style='width:100px;font-size:15px;padding:5px;margin-right:10px;float:right' name='tahun_anggaran'>";
 		//$select.="<option value=''>-Pilih Tahun Anggaran-</option>";
 		$q2 = $this->db->query("select * from tahun_anggaran order by tahun_anggaran asc");
 		if ($q2->num_rows() > 0) {
@@ -220,7 +230,7 @@ class template_renja_model extends CI_Model
 	}
 	function tahapan_dokumen($id=""){
 		$select="";
-		$select.="<select id='tahapan_dokumen' class='form-control input-xs' style='height:30px;width:100%;font-size:12px;padding:2px;' name='tahapan_dokumen'>";
+		$select.="<select id='tahapan_dokumen' class='form-control input-xs' style='height:30px;width:40%;font-size:12px;padding:2px;' name='tahapan_dokumen'>";
 		$select.="<option value=''>-Pilih Tahapan Dokumen-</option>";
 		$q2 = $this->db->query("select * from tahapan_dokumen order by id_dokumen asc");
 		if ($q2->num_rows() > 0) {
@@ -856,7 +866,8 @@ function import_renja($file_name=""){
 							'status_acuan'=>$data->status_acuan ,
  						 	'id_data_renja'=>$data->id,	
  						 	'tahapan_dokumen'=>$data->tahapan_dokumen,	
-							'approve_by'=>$this->session->userdata('ID_USER'),							 
+							'approve_by'=>$this->session->userdata('ID_USER'),		
+							'db_rkakl'=>$data->db_rkakl					 
  					);
 				}
 		}
@@ -1091,6 +1102,7 @@ function import_renja($file_name=""){
 		$table="";
 		$button="";
 		$check_child="";
+		$mix_kode=$this->input->post('mix_kode');
 		$pengkodean=$this->input->post('pengkodean');
 		$kode_direktorat=$this->session->userdata('KODE_DIREKTORAT');
 		$style_header="style='font-family:Tahoma;vertical-align:middle;font-size:11px;vertical-align:middle;height:60px";
@@ -1111,6 +1123,11 @@ function import_renja($file_name=""){
 							$style_header.= " ;background-color:#F0F0F0;font-weight:bold'" ;	
 							$table.="<td $style_header class='indikator'>
 							<div style='height:10px;width:10px;background-color:#2C802C'></div></td>";
+							if($mix_kode=="1"){
+								$kode_mix=$this->get_kode_mapping_fix($data_f->id_data_renja,$data_f->kode,$data_f->parent,"45");
+								$table.="<td $style_header><center><b><span style='color:#F9F9F9'>'</span><span style='color:#E74C3C;font-weight:bold'>".($kode_mix)."</span></b></center></td>";
+							}	
+
 							$table.="<td $style_header><center><b><span style='color:#F0F0F0'>'</span>".($kode)."</b></center></td>";
 							$table.="<td colspan='2' $style_header > ".(($data_f->indikator))."</td>";
 							$class_editable="";							 
@@ -1123,7 +1140,14 @@ function import_renja($file_name=""){
 								$style_header.= " ;background-color:#F9F9F9'" ;
 							}	
 							$table.="<td $style_header></td>";
-							$table.="<td $style_header><div style='height:10px;;width:10px;background-color:#31BC86'></div></td>";
+							 
+							if($mix_kode=="1"){
+								$kode_mix=$this->get_kode_mapping_fix($data_f->id_data_renja,$data_f->kode,$data_f->parent,"45");
+								$table.="<td $style_header><div style='height:10px;;width:10px;background-color:#31BC86'></div> ";
+								$table.="<td $style_header><center><b><span style='color:#F9F9F9'>'</span><span style='color:#E74C3C;font-weight:bold'>".($kode_mix)."</span></b></center></td>";
+							} else {
+								$table.="<td $style_header><div style='height:10px;;width:10px;background-color:#31BC86'></div></td>";
+							}
 							$table.="<td $style_header><center><b><span style='color:#F9F9F9'>'</span>".($kode)."</b></center></td>";
 							$table.="<td $style_header> ".(($data_f->komponen_input))." </td>";
  		 					$button=$this->button_action($data_f->id,$data_f->tipe,$data_f->kode_direktorat_child);
@@ -1131,7 +1155,14 @@ function import_renja($file_name=""){
 							$style_header.= " '" ;
 							$table.="<td $style_header></td>";
 							$table.="<td $style_header><div style='height:10px;width:10px;margin-left:20px;background-color:#BED446;float:right;margin-right:10px'></div></td>";
-							$table.="<td $style_header><b> <center><span style='color:#fff'>'</span>".($kode)."</center></b></td>";
+							if($mix_kode=="1"){
+								$kode=$this->get_kode_mapping_fix($data_f->id_data_renja,$data_f->kode,$data_f->parent,"40");
+								//$table.="<td $style_header><center><b><span style='color:#F9F9F9'>'</span>".($kode_mix)."</b></center></td>";
+								$table.="<td></td>";
+								$table.="<td $style_header><center> <b> <span style='color:#E74C3C;font-weight:bold'>".$kode."</span> </b></center></td>";
+							} else {
+								$table.="<td $style_header><center> <b> ".$kode." </b></center></td>";
+							}
 							$table.="<td $style_header> ".(($data_f->komponen_input))." </td>";
 							$button=$this->button_action($data_f->id,$data_f->tipe,$data_f->kode_direktorat_child);
 							
@@ -1269,6 +1300,7 @@ function import_renja($file_name=""){
 		if($unit!=""){
 			$sql="   a.id_data_renja='".$id."' and  ";
 		}
+		$mix_kode=$this->input->post('mix_kode');
  		$table="";
 		$style_header="style='font-size:10px;vertical-align:middle;font-size:10px;color:#000;background-color:#A6A6A6;font-weight:bold'";
 		$query=$this->db->query("select *,m_unit_kerja.kd_unit_kerja,a.id as id,tahun_anggaran.tahun_anggaran as tahun from data_template_renja a
@@ -1301,8 +1333,16 @@ function import_renja($file_name=""){
 					
 						$table.="<tr>";
 						$table.="<td $style_header >".$data_f->kode_direktorat."</td>";
-						$table.="<td colspan='3' ".$style_header."><b>".(($data_f->program))."</b></td>";
- 						$table.="<td ".$style_header."><b>".(($data_f->sasaran_program))."</b></td>";
+
+						 
+
+						if($mix_kode=="1"){
+								$table.="<td colspan='4' ".$style_header."><b>".strtoupper($data_f->program)."</b></td>";
+								$table.="<td ".$style_header."><b>".strtoupper($data_f->sasaran_program)."</b></td>";
+ 						} else {
+							$table.="<td colspan='3' ".$style_header."><b>".strtoupper($data_f->program)."</b></td>";
+							$table.="<td ".$style_header."><b>".strtoupper($data_f->sasaran_program)."</b></td>";
+						}
 						$table.="<td  $style_header>".$data_f->target."</td>";
 
 						$table.="<td $style_header class='t_sum_bo01'><center>".number_format($bo001)."</center></td>";
@@ -1718,9 +1758,7 @@ function import_renja($file_name=""){
 							}
 							
 						} else if($data_f->tipe=="komponen_input"){
- 							$table.="<td $style_header></td>";
-							
-							
+ 							$table.="<td $style_header></td>";					
 							if($mix_kode=="1"){
 								$kode_mix=$this->get_kode_mapping_fix($data_f->id_data_renja,$data_f->kode,$data_f->parent,"45");
 								$table.="<td $style_header><div style='height:10px;;width:10px;background-color:#31BC86'></div> ";
@@ -3233,7 +3271,7 @@ function import_renja($file_name=""){
 					}	 
 				}
 		}
-		function get_kewenangan($id=""){
+	function get_kewenangan($id=""){
 			$select="";
 			$select.="<select class='form-control input-sm' id='kewenangan' name='kewenangan'>";
 			$select.="<option value=''>-Pilih Kewenangan-</option>";
@@ -3249,8 +3287,8 @@ function import_renja($file_name=""){
 			}
 			$select.="</select>";
 			return $select;
-		}	
-		function log_persetujuan($dari="",$tahun=""){     		 
+	}	
+	function log_persetujuan($dari="",$tahun=""){     		 
 			$query=$this->db->query("select *,a.dari as daridirektorat,tahun_anggaran.tahun_anggaran as tahun_anggaran,a.id as id,t_user.nama as nama_user,
 			(select nama_unit_kerja from m_unit_kerja where id_divisi=a.dari) as dari, 
 			(select nama_unit_kerja from m_unit_kerja where id_divisi=a.kepada) as tujuan  ,
@@ -3258,13 +3296,13 @@ function import_renja($file_name=""){
 			from log_template_renja a 
 			left join t_user on t_user.id=a.approve_by 
 			left join tahun_anggaran on tahun_anggaran.id=a.tahun_anggaran 
-			where 1=1   and a.dari='".$dari."' and a.tahun_anggaran='".$tahun."' order by a.tahapan_dokumen desc ");
+			where 1=1   and a.dari='".$dari."' and a.tahun_anggaran='".$tahun."' order by a.id desc ");
  			 if ($query->num_rows() > 0) {
 				foreach ($query->result() as $data) {
 					$menus[]=$data;
 				}
 				return $menus;
 			}
-     }     
+    	 }     
  	}
 ?>
