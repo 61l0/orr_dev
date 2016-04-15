@@ -1,0 +1,21 @@
+<?php  if(!empty($table)) { foreach($table as $data) { ?> 
+    <tr>
+        <td style="width:300px"> <?php echo strtoupper($data->nama_unit_kerja) ?></h4></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_01 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",1)' style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_02 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",2)' style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_03 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",3)'  style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_04 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",4)'  style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_05 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",5)'  style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_06 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",6)' style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_07 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",7)' style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_08 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",8)' style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_09 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",9)' style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_10 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",10)' style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_11 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",11)' style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 		   			 
+	    <td class="small_font"><?php echo $data->c_12 ? "<a style='margin:0px;color:#fff' class='btn btn-success btn-block btn-xs'>TERISI</a>"  : "<a onclick='return load_send_mail_capaian(".$data->id_divisi.",12)' style='margin:0px;color:#fff' class='btn btn-danger btn-block btn-xs'>KOSONG</a>" ; ?></td> 	  			 
+	</tr>
+	<?php }} else { ?>
+	<tr>
+		<td colspan="20"> <center>Data Tidak Tersedia</center> </td>
+	</tr>
+<?php } ?>
