@@ -508,6 +508,7 @@
     		}
 		 }
 	  	$(document).ready(function() {
+	  		set_after_load();
 	  		load_table_renja();
 		$( ".export_to_excel" ).click(function() {
   			var href=($(this).prop('href'));
