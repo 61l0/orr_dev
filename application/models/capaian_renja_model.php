@@ -12,8 +12,7 @@ class capaian_renja_model extends CI_Model{
      			$sql=" and a.dari='".$dari."'";
      		} else {
      			$sql="";
-     		}
-     
+     		}     
 			$query=$this->db->query("select *,tahun_anggaran.tahun_anggaran as tahun_anggaran,a.id as id,t_user.nama as nama_user,
 			(select nama_unit_kerja from m_unit_kerja where id_divisi=a.dari) as dari, 
 			(select nama_unit_kerja from m_unit_kerja where id_divisi=a.kepada) as tujuan  
@@ -49,7 +48,7 @@ class capaian_renja_model extends CI_Model{
 				return $menus;
 			}
 	}
-	 function get_data_detail($id=""){     	
+	function get_data_detail($id=""){     	
 			$query=$this->db->query("select * from template_renja where id='".$id."'");
 			 if ($query->num_rows() > 0) {
 				foreach ($query->result() as $data) {
@@ -58,6 +57,76 @@ class capaian_renja_model extends CI_Model{
 				return $menus;
 			}
      }     
+    function cek_pagu_per_row($kode_direktorat_child="",$tahun_anggaran="",$parent="",$kode=""){
+    		$jumlah=0;
+    		$child="";
+    		$total_bo1="";
+			$total_bo2="";	
+			$total_rm_pusat="";
+			$total_rm_daerah="";
+			$total_phln_pusat="";
+			$total_phln_daerah="";
+			$total_pnbp="";
+			$kode_a="";
+			$parent_a="";
+    	 	$query=$this->db->query("select a.parent,a.kode,a.tahun_berlaku,a.bo01,a.bo02,a.bno_rm_p,a.bno_rm_d,a.bno_phln_p,a.bno_phln_d,a.pnbp,
+			(select count(1) as jumlah from data_template_renja where trim(kode_direktorat_child)=a.kode_direktorat_child	and (kode_direktorat='' or kode_direktorat IS NULL) and tahun_berlaku=a.tahun_berlaku and  parent=a.kode) as childnya 
+			from data_template_renja a	where trim(a.kode_direktorat_child)='".trim($kode_direktorat_child)."'	and (a.kode_direktorat='' or a.kode_direktorat IS NULL) and a.tahun_berlaku='".$tahun_anggaran."' and a.parent='".$parent."' and a.kode='".$kode."' "); 
+    			if ($query->num_rows() > 0) {
+				foreach ($query->result() as $data) {		
+					$total_bo1=$data->bo01;
+					$total_bo2=$data->bo02;					
+					$total_rm_pusat=$data->bno_rm_p;
+					$total_rm_daerah=$data->bno_rm_d;
+					$total_phln_pusat=$data->bno_phln_p;
+					$total_phln_daerah=$data->bno_phln_d;
+					$total_pnbp=$data->pnbp; 	
+					$child=$data->childnya;
+					$kode_a=$data->kode;
+					$parent_a=$data->parent;
+				}
+				$jumlah=$total_bo1+$total_bo2+$total_rm_pusat+$total_rm_daerah+$total_phln_pusat+$total_phln_daerah+$total_pnbp;
+				if($child>0){
+					return $this->cek_pagu_per_row_child($kode_direktorat_child,$tahun_anggaran,$parent_a,$kode_a);
+				} else {
+					return $jumlah;
+				}
+				
+			}	
+    }
+    
+    function cek_pagu_per_row_child($kode_direktorat_child="",$tahun_anggaran="",$parent="",$kode=""){
+    		$jumlah=0;
+    		$child="";
+    		$total_bo1="";
+			$total_bo2="";	
+			$total_rm_pusat="";
+			$total_rm_daerah="";
+			$total_phln_pusat="";
+			$total_phln_daerah="";
+			$total_pnbp="";
+			$kode_a="";
+			$parent_a="";
+    	 	$query=$this->db->query("select a.parent,a.kode,a.tahun_berlaku,a.bo01,a.bo02,a.bno_rm_p,a.bno_rm_d,a.bno_phln_p,a.bno_phln_d,a.pnbp,
+			(select count(1) as jumlah from data_template_renja where trim(kode_direktorat_child)=a.kode_direktorat_child	and (kode_direktorat='' or kode_direktorat IS NULL) and tahun_berlaku=a.tahun_berlaku and  parent=a.kode) as childnya 
+			from data_template_renja a	where trim(a.kode_direktorat_child)='".trim($kode_direktorat_child)."'	and (a.kode_direktorat='' or a.kode_direktorat IS NULL) and a.tahun_berlaku='".$tahun_anggaran."' and a.parent='".$kode."'"); 
+        	if ($query->num_rows() > 0) {
+				foreach ($query->result() as $data) {		
+					$total_bo1=$total_bo1+$data->bo01;
+					$total_bo2=$total_bo2+$data->bo02;					
+					$total_rm_pusat=$total_rm_pusat+$data->bno_rm_p;
+					$total_rm_daerah=$total_rm_daerah+$data->bno_rm_d;
+					$total_phln_pusat=$total_phln_pusat+$data->bno_phln_p;
+					$total_phln_daerah=$total_phln_daerah+$data->bno_phln_d;
+					$total_pnbp=$total_pnbp+$data->pnbp; 	
+					$child=$data->childnya;
+					$kode_a=$data->kode;
+					$parent_a=$data->parent;
+				}
+				$jumlah=$total_bo1+$total_bo2+$total_rm_pusat+$total_rm_daerah+$total_phln_pusat+$total_phln_daerah+$total_pnbp;
+				return $jumlah;
+			}	
+    }
 	function simpan_selain_kinerja_target(){
 		$id=$this->input->post('name');
 		$tipe_analisis=$this->input->post('tipe_analisis');
@@ -72,7 +141,8 @@ class capaian_renja_model extends CI_Model{
 		if($panjang=="1"){
 			$bulan='0'.$bulan;
 		}
-		$query=$this->db->query("select  *,template_renja.tahun_anggaran,a.kode_direktorat_child,a.kode,a.parent
+		$tahun_berlaku="";
+		$query=$this->db->query("select  *,template_renja.tahun_anggaran,a.kode_direktorat_child,a.kode,a.parent,a.tahun_berlaku as tahun_berlaku
 		from data_template_renja a 
 		left join template_renja on template_renja.id=a.id_data_renja	
 		where a.id='$id'");
@@ -82,6 +152,7 @@ class capaian_renja_model extends CI_Model{
 					 $kode=$data->kode;
 					 $parent=$data->parent; 
 					 $tahun_anggaran=$data->tahun_anggaran;
+					 $tahun_berlaku=$data->tahun_berlaku;
 				}
 			}
 		
@@ -111,9 +182,17 @@ class capaian_renja_model extends CI_Model{
 		 'tahun'=>$tahun_anggaran,
 		 'tanggal'=>date("Y-m-d"),
 		);
+ 
+ 		$cek_exist=$this->cek_exist($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
+ 		$cek_pagu_per_row=$this->cek_pagu_per_row($kode_direktorat_child,$tahun_berlaku,$parent,$kode);
+ 		$cek_total_target_per_bulan=$this->cek_total_keseluruhan_per_bulan($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
+ 		$total_sebelumnya=$this->ambil_field_exist("c_".$bulan,$kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
+  		if ((($cek_total_target_per_bulan - $total_sebelumnya)+ $jumlah) > ($cek_pagu_per_row)){
+	 		echo "Data Target Capaian , Tidak Boleh Melebihi Pagu....";
+			return false;
+		}
 
-		$cek_exist=$this->cek_exist($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
- 		if($cek_exist =='0'){
+   		if($cek_exist =='0'){
 			$this->db->trans_start();
 			$this->db->insert($table_capaian,$data);
 			$this->db->trans_complete();
@@ -133,6 +212,22 @@ class capaian_renja_model extends CI_Model{
 	 	//$this->reset_indikator_affter_insert_sub_komponen_input('target');
 
 	}
+	function ambil_field_exist($field="",$kode_direktorat_child="",$kode="",$parent="",$table="",$tahun_anggaran=""){
+		$total="0";
+	$query=$this->db->query("select  ".$field." as jumlah
+			from ".$table." where trim(kode_direktorat_child)='".trim($kode_direktorat_child)."'	
+			and trim(kode)='".trim($kode)."'	
+			and trim(parent)='".trim($parent)."'	
+			and trim(tahun)='".trim($tahun_anggaran)."'	
+			");
+			if ($query->num_rows() > 0) {
+					foreach ($query->result() as $data) {
+						 $total=$data->jumlah;
+					}			 	 
+			}
+			return $total;
+	}
+
 	function get_parent($parent=""){
 		$query=$this->db->query("select * from data_template_renja where trim(kode)='$parent'");
  		return $query->row();
@@ -255,6 +350,7 @@ class capaian_renja_model extends CI_Model{
 					 $kode=$data->kode;
 					 $parent=$data->parent; 
 					 $tahun_anggaran=$data->tahun_anggaran;
+					 $tahun_berlaku=$data->tahun_berlaku;
 				}
 			}
 		
@@ -286,6 +382,19 @@ class capaian_renja_model extends CI_Model{
 		);
 
 		$cek_exist=$this->cek_exist($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
+		$cek_pagu_per_row=$this->cek_pagu_per_row($kode_direktorat_child,$tahun_berlaku,$parent,$kode);
+ 		$cek_total_target_per_bulan=$this->cek_total_keseluruhan_per_bulan($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
+ 		$total_sebelumnya=$this->ambil_field_exist("c_".$bulan,$kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
+ 		$total_target_capaian_keuangan=$this->cek_total_keseluruhan_per_bulan($kode_direktorat_child,$kode,$parent,"capaian_keuangan_target",$tahun_anggaran);
+   	 	if(($total_target_capaian_keuangan=="0") or($total_target_capaian_keuangan=="")){
+   	 		echo "Data Target Masih Kosong .....";
+			return false;
+   	 	}
+   		if ((($cek_total_target_per_bulan - $total_sebelumnya) + $jumlah) > ($cek_pagu_per_row)){
+	 		echo "Data Target Capaian , Tidak Boleh Melebihi Pagu....";
+			return false;
+		}
+		//echo $cek_total_target_per_bulan;
  		if($cek_exist =='0'){
 			$this->db->trans_start();
 			$this->db->insert($table_capaian,$data);
@@ -473,6 +582,21 @@ class capaian_renja_model extends CI_Model{
 			 echo $c;
 		}	 
 	}
+	function cek_total_keseluruhan_per_bulan($kode_direktorat_child="",$kode_indikator="",$indikator="",$table_capaian="",$tahun_anggaran=""){		 
+			$query=$this->db->query("select 
+			sum(c_01+c_02+c_03+c_04+c_05+c_06+c_07+c_08+c_09+c_10+c_11+c_12) as jumlah
+			from ".$table_capaian." where trim(kode_direktorat_child)='".trim($kode_direktorat_child)."'	
+			and trim(kode)='".trim($kode_indikator)."'	
+			and trim(parent)='".trim($indikator)."'	
+			and trim(tahun)='".trim($tahun_anggaran)."'	
+			");
+			if ($query->num_rows() > 0) {
+					foreach ($query->result() as $data) {
+						 $total=$data->jumlah;
+					}			 	 
+			}
+			return $total;
+	}
 	function simpan_target(){
 		$id=$this->input->post('name');
 		$tipe_analisis=$this->input->post('tipe_analisis');
@@ -526,8 +650,15 @@ class capaian_renja_model extends CI_Model{
 		 'tahun'=>$tahun_anggaran,
 		 'tanggal'=>date("Y-m-d"),
 		);
+		$cek_if_lebih_seratus=$this->cek_total_keseluruhan_per_bulan($kode_direktorat_child,$kode,$parent,"capaian_kinerja_target",$tahun_anggaran);
+		$total_sebelumnya=$this->ambil_field_exist("c_".$bulan,$kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
+  
 
-		$cek_exist=$this->cek_exist($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
+		if((($cek_if_lebih_seratus-$total_sebelumnya)+$jumlah) > 100){
+			echo "Jumlah Total Tidak Boleh Dari 100";
+			return false;
+		}
+ 		$cek_exist=$this->cek_exist($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
  		if($cek_exist =='0'){
 			$this->db->trans_start();
 			$this->db->insert($table_capaian,$data);
@@ -602,9 +733,15 @@ class capaian_renja_model extends CI_Model{
 		);
 		$cek_exist=$this->cek_exist($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
 		$cek_if_lebih_seratus=$this->cek_if_lebih_seratus($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
- 		$get_field_month=$this->get_field_month($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
- 		$jumlah_semua=$cek_if_lebih_seratus-$get_field_month+$jumlah;
- 		//if($jumlah_semua <= 100000){
+ 		$total_sebelumnya=$this->get_field_month($kode_direktorat_child,$kode,$parent,$table_capaian,$tahun_anggaran);
+ 		$jumlah_semua=$cek_if_lebih_seratus-$total_sebelumnya+$jumlah;
+ 		$cek_total_target_per_row=$this->cek_total_target_per_row($kode_direktorat_child,$kode,$parent,'capaian_kinerja_target',$tahun_anggaran);
+   		
+   		if ($jumlah_semua > $cek_total_target_per_row ){
+ 			echo "Realisasi Tidak Boleh Melebihi Target Capaian Kinerja ...";
+ 			return false;
+ 		}
+ 		
  		if($jumlah <= 100){
 	 		if($cek_exist =='0'){
 				$this->db->trans_start();
@@ -625,6 +762,21 @@ class capaian_renja_model extends CI_Model{
 		$this->load->model("history_model"); 
 		$this->history_model->simpan('capaian_realisasi','USER BERNAMA ' .$this->session->userdata('NAMA') .' MELAKUKAN PERUBAHAN DATA RENJA  DENGAN DATA ' ,$json);
 		//$this->reset_indikator_affter_insert_sub_komponen_input('realisasi');
+	}
+	function cek_total_target_per_row($kode_direktorat_child="",$kode_indikator="",$indikator="",$table_capaian="",$tahun_anggaran=""){		 
+			$query=$this->db->query("select 
+			sum(c_01+c_02+c_03+c_04+c_05+c_06+c_07+c_08+c_09+c_10+c_11+c_12) as jumlah
+			from ".$table_capaian." where trim(kode_direktorat_child)='".trim($kode_direktorat_child)."'	
+			and trim(kode)='".trim($kode_indikator)."'	
+			and trim(parent)='".trim($indikator)."'	
+			and trim(tahun)='".trim($tahun_anggaran)."'	
+			");
+ 			if ($query->num_rows() > 0) {
+					foreach ($query->result() as $data) {
+						 $total=$data->jumlah;
+					}			 	 
+			}
+			return $total;
 	}
 	function get_field_month($kode_direktorat_child="",$kode_indikator="",$indikator="",$table_capaian="",$tahun_anggaran=""){
 		$total=0;
@@ -1320,6 +1472,8 @@ class capaian_renja_model extends CI_Model{
 			where a.id_data_renja='".$id."' and trim(parent)=trim('".$parent."') and trim(tipe)!='program' order by a.urutan asc");
      			if ($query->num_rows() > 0) {
 				foreach ($query->result() as $data_f) {
+				  $parclass_target="";
+				  $parclass_realisasi="";
 				  if(strtoupper($data_f->kode)!="OUTPUT"){
 				   if($data_f->tipe!="sub_komponen_input") {
 					$c_01=0;
@@ -1334,30 +1488,60 @@ class capaian_renja_model extends CI_Model{
 					$c_10=0;
 					$c_11=0;
 					$c_12=0;
+					$target_keuangan=0;
+					$total_kesamping_keuangan=0;
+				     $total_kesamping_kinerja=0;
 					$class_xeditable='';
 				    if ($this->session->userdata('ID_DIREKTORAT')==$data_f->dari){
 			        	$class_xeditable='text_'.$tipe_capaian.'';
 			        }	
  					$table.="<tr>";
 						if($data_f->tipe=="indikator"){
+							$parclass_target=" view_target_keuangan_target ";
+							$parclass_realisasi=" view_target_keuangan_realisasi ";
 							$style_header.=";font-weight:bold";
 							$table.="<td style='".$style_header.";vertical-align:middle;'>
 							<center><div style='height:10px;width:10px;background-color:#2C802C'></div></center></td>";
 							$table.="<td style='".$style_header.";vertical-align:middle;'> <center> ".strtoupper($data_f->kode)."  </center></td>";
 							$table.="<td colspan='2' style='".$style_header."'> ".(($data_f->indikator))."</td>";
-							/*$c_01=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'01',$data_f->tahun_berlaku,'target');
-							$c_02=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'02',$data_f->tahun_berlaku,'target');
-							$c_03=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'03',$data_f->tahun_berlaku,'target');
-							$c_04=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'04',$data_f->tahun_berlaku,'target');
-							$c_05=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'05',$data_f->tahun_berlaku,'target');
-							$c_06=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'06',$data_f->tahun_berlaku,'target');
-							$c_07=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'07',$data_f->tahun_berlaku,'target');
-							$c_08=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'08',$data_f->tahun_berlaku,'target');
-							$c_09=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'09',$data_f->tahun_berlaku,'target');
-							$c_10=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'10',$data_f->tahun_berlaku,'target');
-							$c_11=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'11',$data_f->tahun_berlaku,'target');
-							$c_12=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'12',$data_f->tahun_berlaku,'target');*/
-							$c_01=$data_f->c_01;
+							$c_01=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'01',$data_f->tahun_berlaku,'target');
+							$c_02=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'02',$data_f->tahun_berlaku,'target');
+							$c_03=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'03',$data_f->tahun_berlaku,'target');
+							$c_04=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'04',$data_f->tahun_berlaku,'target');
+							$c_05=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'05',$data_f->tahun_berlaku,'target');
+							$c_06=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'06',$data_f->tahun_berlaku,'target');
+							$c_07=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'07',$data_f->tahun_berlaku,'target');
+							$c_08=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'08',$data_f->tahun_berlaku,'target');
+							$c_09=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'09',$data_f->tahun_berlaku,'target');
+							$c_10=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'10',$data_f->tahun_berlaku,'target');
+							$c_11=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'11',$data_f->tahun_berlaku,'target');
+							$c_12=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'12',$data_f->tahun_berlaku,'target'); 
+							$target_keuangan=$c_01+
+							$c_02+
+							$c_03+
+							$c_04+
+							$c_05+
+							$c_06+
+							$c_07+
+							$c_08+
+							$c_09+
+							$c_10+
+							$c_11+
+							$c_12;
+
+							$c_01_keuangan=$data_f->c_01_keuangan;
+							$c_02_keuangan=$data_f->c_02_keuangan;
+							$c_03_keuangan=$data_f->c_03_keuangan;
+							$c_04_keuangan=$data_f->c_04_keuangan;
+							$c_05_keuangan=$data_f->c_05_keuangan;
+							$c_06_keuangan=$data_f->c_06_keuangan;
+							$c_07_keuangan=$data_f->c_07_keuangan;
+							$c_08_keuangan=$data_f->c_08_keuangan;
+							$c_09_keuangan=$data_f->c_09_keuangan;
+							$c_10_keuangan=$data_f->c_10_keuangan;
+							$c_11_keuangan=$data_f->c_11_keuangan;
+							$c_12_keuangan=$data_f->c_12_keuangan;
+							/*$c_01=$data_f->c_01;
 							$c_02=$data_f->c_02;
 							$c_03=$data_f->c_03;
 							$c_04=$data_f->c_04;
@@ -1368,7 +1552,46 @@ class capaian_renja_model extends CI_Model{
 							$c_09=$data_f->c_09;
 							$c_10=$data_f->c_10;
 							$c_11=$data_f->c_11;
-							$c_12=$data_f->c_12;
+							$c_12=$data_f->c_12;*/
+							$c_01_keuangan=$data_f->c_01_keuangan;
+							$c_02_keuangan=$data_f->c_02_keuangan;
+							$c_03_keuangan=$data_f->c_03_keuangan;
+							$c_04_keuangan=$data_f->c_04_keuangan;
+							$c_05_keuangan=$data_f->c_05_keuangan;
+							$c_06_keuangan=$data_f->c_06_keuangan;
+							$c_07_keuangan=$data_f->c_07_keuangan;
+							$c_08_keuangan=$data_f->c_08_keuangan;
+							$c_09_keuangan=$data_f->c_09_keuangan;
+							$c_10_keuangan=$data_f->c_10_keuangan;
+							$c_11_keuangan=$data_f->c_11_keuangan;
+							$c_12_keuangan=$data_f->c_12_keuangan;
+
+							$c_01_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'01',$data_f->tahun_berlaku,'realisasi');
+							$c_02_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'02',$data_f->tahun_berlaku,'realisasi');
+							$c_03_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'03',$data_f->tahun_berlaku,'realisasi');
+							$c_04_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'04',$data_f->tahun_berlaku,'realisasi');
+							$c_05_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'05',$data_f->tahun_berlaku,'realisasi');
+							$c_06_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'06',$data_f->tahun_berlaku,'realisasi');
+							$c_07_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'07',$data_f->tahun_berlaku,'realisasi');
+							$c_08_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'08',$data_f->tahun_berlaku,'realisasi');
+							$c_09_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'09',$data_f->tahun_berlaku,'realisasi');
+							$c_10_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'10',$data_f->tahun_berlaku,'realisasi');
+							$c_11_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'11',$data_f->tahun_berlaku,'realisasi');
+							$c_12_keuangan=$this->get_total_indikator_capaian(2,$data_f->kode_direktorat_child,$data_f->kode,'12',$data_f->tahun_berlaku,'realisasi'); 
+
+							$total_kesamping_keuangan=$c_01_keuangan+
+							$c_02_keuangan+
+							$c_03_keuangan+
+							$c_04_keuangan+
+							$c_05_keuangan+
+							$c_06_keuangan+
+							$c_07_keuangan+
+							$c_08_keuangan+
+							$c_09_keuangan+
+							$c_10_keuangan+
+							$c_11_keuangan+
+							$c_12_keuangan;
+						
 						} else if($data_f->tipe=="komponen_input"){
 							$table.="<td></td>";
 							$table.="<td style='".$style_header.";vertical-align:middle;'>
@@ -1392,58 +1615,50 @@ class capaian_renja_model extends CI_Model{
 								$c_10=$data_f->c_10;
 								$c_11=$data_f->c_11;
 								$c_12=$data_f->c_12;
-								/* TIDAK DIGUNAKAN KARENA HANYA SAMPAI KOMPONEN INPUT */
-								/*
-								if ($check_child!="true") {
-									$c_01=$data_f->c_01;
-									$c_02=$data_f->c_02;
-									$c_03=$data_f->c_03;
-									$c_04=$data_f->c_04;
-									$c_05=$data_f->c_05;
-									$c_06=$data_f->c_06;
-									$c_07=$data_f->c_07;
-									$c_08=$data_f->c_08;
-									$c_09=$data_f->c_09;
-									$c_10=$data_f->c_10;
-									$c_11=$data_f->c_11;
-									$c_12=$data_f->c_12;
-								} else {
-									$c_01=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'01',$data_f->tahun_berlaku,'target');
-									$c_02=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'02',$data_f->tahun_berlaku,'target');
-									$c_03=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'03',$data_f->tahun_berlaku,'target');
-									$c_04=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'04',$data_f->tahun_berlaku,'target');
-									$c_05=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'05',$data_f->tahun_berlaku,'target');
-									$c_06=$this->get_total_indikator($id_table,$data_f->kode_direktorat_child,$data_f->kode,'06',$data_f->tahun_berlaku,'target');
-									$c_07=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'07',$data_f->tahun_berlaku,'target');
-									$c_08=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'08',$data_f->tahun_berlaku,'target');
-									$c_09=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'09',$data_f->tahun_berlaku,'target');
-									$c_10=$this->get_total_indikator_capaian($id_table,$data_f->kode_direktorat_child,$data_f->kode,'10',$data_f->tahun_berlaku,'target');
-									$c_11=$this->get_total_indikator($id_table,$data_f->kode_direktorat_child,$data_f->kode,'11',$data_f->tahun_berlaku,'target');
-									$c_12=$this->get_total_indikator($id_table,$data_f->kode_direktorat_child,$data_f->kode,'12',$data_f->tahun_berlaku,'target');
-								}
-								*/
-						}	else if($data_f->tipe=="sub_komponen_input"){
 
-								/*$table.="<td></td>";
-								$table.="<td></td>";
-								$table.="<td style='".$style_header.";vertical-align:middle;'> <center>".strtoupper($data_f->kode)."</center></b></td>";
-								$table.="<td style='".$style_header.";vertical-align:middle;'> ".(($data_f->komponen_input))." </td>";
-								$check_child=$this->cek_child_komponen_input($data_f->kode,$data_f->id_data_renja);
-			 					if (($check_child!="true") and ($this->session->userdata('ID_DIREKTORAT')==$data_f->dari)){
-										$class_xeditable='text_'.$tipe_capaian.'';
-								}
-								$c_01=$data_f->c_01;
-								$c_02=$data_f->c_02;
-								$c_03=$data_f->c_03;
-								$c_04=$data_f->c_04;
-								$c_05=$data_f->c_05;
-								$c_06=$data_f->c_06;
-								$c_07=$data_f->c_07;
-								$c_08=$data_f->c_08;
-								$c_09=$data_f->c_09;
-								$c_10=$data_f->c_10;
-								$c_11=$data_f->c_11;
-								$c_12=$data_f->c_12;*/
+
+								$target_keuangan=
+					        	$data_f->c_01_keuangan_target+
+					        	$data_f->c_02_keuangan_target+
+					        	$data_f->c_03_keuangan_target+
+					        	$data_f->c_04_keuangan_target+
+					        	$data_f->c_05_keuangan_target+
+					        	$data_f->c_06_keuangan_target+
+					        	$data_f->c_07_keuangan_target+
+					        	$data_f->c_08_keuangan_target+
+					        	$data_f->c_09_keuangan_target+
+					        	$data_f->c_10_keuangan_target+
+					        	$data_f->c_11_keuangan_target+
+					        	$data_f->c_12_keuangan_target;
+
+								
+								$c_01_keuangan=$data_f->c_01_keuangan;
+								$c_02_keuangan=$data_f->c_02_keuangan;
+								$c_03_keuangan=$data_f->c_03_keuangan;
+								$c_04_keuangan=$data_f->c_04_keuangan;
+								$c_05_keuangan=$data_f->c_05_keuangan;
+								$c_06_keuangan=$data_f->c_06_keuangan;
+								$c_07_keuangan=$data_f->c_07_keuangan;
+								$c_08_keuangan=$data_f->c_08_keuangan;
+								$c_09_keuangan=$data_f->c_09_keuangan;
+								$c_10_keuangan=$data_f->c_10_keuangan;
+								$c_11_keuangan=$data_f->c_11_keuangan;
+								$c_12_keuangan=$data_f->c_12_keuangan;
+
+								$total_kesamping_keuangan=$c_01_keuangan+
+								$c_02_keuangan+
+								$c_03_keuangan+
+								$c_04_keuangan+
+								$c_05_keuangan+
+								$c_06_keuangan+
+								$c_07_keuangan+
+								$c_08_keuangan+
+								$c_09_keuangan+
+								$c_10_keuangan+
+								$c_11_keuangan+
+								$c_12_keuangan;
+						}	else if($data_f->tipe=="sub_komponen_input"){
+								/* NO ACTION HERE */
 						}	
 						
 
@@ -1477,12 +1692,10 @@ class capaian_renja_model extends CI_Model{
 								
 							}
  					 
-				 			$total_pagu=$bo01+$bo02+$bno_rm_p+$bno_rm_d+$bno_phln_p+$bno_phln_d+$pnbp;
-									
+				 			$total_pagu=$bo01+$bo02+$bno_rm_p+$bno_rm_d+$bno_phln_p+$bno_phln_d+$pnbp;									
 							$target= $data_f->target ? $data_f->target : " - ";
 							$table.="<td style='".$style_header."'> ".(($data_f->sasaran_kegiatan))." </td>";
-				 			$table.="<td style='".$style_header."'><center>".$target ."</center></td>"; 	
-				 			$table.="<td style='".$style_header."'><center>".number_format($total_pagu)."</center></td>"; 
+ 				 			$table.="<td style='".$style_header."'><center>".number_format($total_pagu)."</center></td>"; 
 
 							$check_child=$this->cek_child_komponen_input($data_f->kode,$data_f->id_data_renja);
  					 		
@@ -1522,50 +1735,14 @@ class capaian_renja_model extends CI_Model{
 
 
 							$table_append="";
-					       // 
-				        	
-				        	/*$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer'  
-				        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-				        	data-placement='right' data-id='".$tipe_capaian."' 
-				        	data-title='Masukan Nilai Baru' onclick='return save_bulan(1,0)'>
-				        	<center>".strtoupper(trim(number_format($c_01)))."</center></a>";
-				        	$table_append.="</td>";*/
+					      	$target_keuangan2= $target_keuangan;
+
+
 
 				        	
-				        	//$target_keuangan = $data_f->target_keuangan ? number_format($data_f->target_keuangan)  : "-";
-				        	$target_keuangan=
-				        	$data_f->c_01_keuangan_target+
-				        	$data_f->c_02_keuangan_target+
-				        	$data_f->c_03_keuangan_target+
-				        	$data_f->c_04_keuangan_target+
-				        	$data_f->c_05_keuangan_target+
-				        	$data_f->c_06_keuangan_target+
-				        	$data_f->c_07_keuangan_target+
-				        	$data_f->c_08_keuangan_target+
-				        	$data_f->c_09_keuangan_target+
-				        	$data_f->c_10_keuangan_target+
-				        	$data_f->c_11_keuangan_target+
-				        	$data_f->c_12_keuangan_target;
-
-				        	//$target_keuangan2= $data_f->target_keuangan ?  ($data_f->target_keuangan)  : "1";
-				        	$target_keuangan2= $target_keuangan;
-
-				        	$total_kesamping_keuangan=0;
-				        	$total_kesamping_kinerja=0;
 
 
-				        	$c_01_keuangan=$data_f->c_01_keuangan;
-							$c_02_keuangan=$data_f->c_02_keuangan;
-							$c_03_keuangan=$data_f->c_03_keuangan;
-							$c_04_keuangan=$data_f->c_04_keuangan;
-							$c_05_keuangan=$data_f->c_05_keuangan;
-							$c_06_keuangan=$data_f->c_06_keuangan;
-							$c_07_keuangan=$data_f->c_07_keuangan;
-							$c_08_keuangan=$data_f->c_08_keuangan;
-							$c_09_keuangan=$data_f->c_09_keuangan;
-							$c_10_keuangan=$data_f->c_10_keuangan;
-							$c_11_keuangan=$data_f->c_11_keuangan;
-							$c_12_keuangan=$data_f->c_12_keuangan;
+				        	
 
 							$c_01_target_kinerja=$data_f->c_01;
 							$c_02_target_kinerja=$data_f->c_02;
@@ -1610,18 +1787,7 @@ class capaian_renja_model extends CI_Model{
 							$c_11_kinerja_realisasi=$data_f->c_11_kinerja_realisasi;
 							$c_12_kinerja_realisasi=$data_f->c_12_kinerja_realisasi;
 
-							$total_kesamping_keuangan=$c_01_keuangan+
-							$c_02_keuangan+
-							$c_03_keuangan+
-							$c_04_keuangan+
-							$c_05_keuangan+
-							$c_06_keuangan+
-							$c_07_keuangan+
-							$c_08_keuangan+
-							$c_09_keuangan+
-							$c_10_keuangan+
-							$c_11_keuangan+
-							$c_12_keuangan;
+							
 
 							$total_kesamping_kinerja=$c_01_kinerja_realisasi+
 							$c_02_kinerja_realisasi+
@@ -1636,52 +1802,15 @@ class capaian_renja_model extends CI_Model{
 							$c_11_kinerja_realisasi+
 							$c_12_kinerja_realisasi;
 
-				        	$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
-				        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer'  
-				        	class='text_keuangan_target_false' id='".$data_f->id."' data-type='text' 
-				        	data-placement='right' data-id='keuangan_target' 
-				        	data-title='Masukan Nilai Baru' onclick='return save_bulan(2,0)'>
-				        	<center>".strtoupper(trim(number_format($target_keuangan)))."</center></a>";
-				        	$table_append.="</td>";
 
-				        	$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
-				        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer'  
-				        	class='text_keuangan_target_false' id='".$data_f->id."' data-type='text' 
-				        	data-placement='right' data-id='keuangan_target' 
-				        	data-title='Masukan Nilai Baru'>
-				        	<center>".number_format($total_kesamping_keuangan)."</center></a>";
-				        	$table_append.="</td>";	        	
-
-				        	if (($target_keuangan!="-")){
-				        		$progress_keuangan= number_format((($total_kesamping_keuangan / $target_keuangan2 ) * 100),2);
- 				        	} else {
-				        		$progress_keuangan="0";
-				        	}
-
-				        	$bg1="";
-				        	$bg2="";
-
-				        	if($target_keuangan2 < $total_kesamping_keuangan){
-				        		$bg1="background:#31BC86";
-				        	} else if($target_keuangan2 > $total_kesamping_keuangan){
-				        		$bg1="background:#B50000";
-				        	}  
-
-				        	$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
-				        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer'  
-				        	class='text_keuangan_target_false' id='".$data_f->id."' data-type='text' 
-				        	data-placement='right' data-id='keuangan_target' 
-				        	data-title='Masukan Nilai Baru'>
-				        	<center class='badge' style='".$bg1."'>".($progress_keuangan)." <b>%</b> </center></a>";
-				        	$table_append.="</td>";
-
-
-				        	$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
+							/* CAPAIAN KINERJA */
+											        	
+							$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
 				        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer'  
 				        	class='".$class_xeditable."_false' id='".$data_f->id."' data-type='text' 
 				        	data-placement='right' data-id='".$tipe_capaian."' 
 				        	data-title='Masukan Nilai Baru' onclick='return save_bulan(1,0)'>
-				        	<center >".$target_kinerja."</center></a>";
+				        	<center >".$target_kinerja." <b> % </b></center></a>";
 				        	$table_append.="</td>";
 
 				        	
@@ -1695,8 +1824,7 @@ class capaian_renja_model extends CI_Model{
 				        	$table_append.="</td>";
  							
 
-				        	//$progress_kinerja=($total_kesamping_kinerja/$target_kinerja2) * 100;
- 							
+  							
  
 
  							if (($target_kinerja!="-")){
@@ -1718,10 +1846,57 @@ class capaian_renja_model extends CI_Model{
 				        	data-title='Masukan Nilai Baru' onclick='return save_bulan(2,0)'>
 				        	<center class='badge' style='".$bg2."'>".($progress_kinerja)." <b> % </b></center></a>";
 				        	$table_append.="</td>";
+
+				        	/*----------------------------------------*/
+
+				        	$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
+				        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer'  
+				        	class='text_keuangan_target_false ".$parclass_target."' id='".$data_f->id."' data-type='text' 
+				        	data-placement='right' data-id='keuangan_target' 
+				        	data-title='Masukan Nilai Baru' onclick='return save_bulan(2,0)'>
+				        	<center>".strtoupper(trim(number_format($target_keuangan)))."</center></a>";
+				        	$table_append.="</td>";
+
+				        	$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
+				        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer'  
+				        	class='text_keuangan_target_false ".$parclass_realisasi."' id='".$data_f->id."' data-type='text' 
+				        	data-placement='right' data-id='keuangan_target' 
+				        	data-title='Masukan Nilai Baru'>
+				        	<center>".number_format($total_kesamping_keuangan)."</center></a>";
+				        	$table_append.="</td>";	        	
+
+				        	if (($target_keuangan!="-")){
+				        		$progress_keuangan= number_format((($total_kesamping_keuangan / $target_keuangan2 ) * 100),2);
+ 				        	} else {
+				        		$progress_keuangan="0";
+				        	}
+
+				        	$bg1="";
+				        	$bg2="";
+
+				        	if($target_keuangan > $total_kesamping_keuangan){
+				        		$bg1="background:#B50000";
+				        	} else if($target_keuangan == $total_kesamping_keuangan){
+				        		$bg1="background:#31BC86";
+				        	}  
+				        	if($total_kesamping_keuangan == "0"){
+				        		$bg1="background:#B50000";
+				        	}   
+
+				        	$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
+				        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer'  
+				        	class='text_keuangan_target_false' id='".$data_f->id."' data-type='text' 
+				        	data-placement='right' data-id='keuangan_target' 
+				        	data-title='Masukan Nilai Baru'>
+				        	<center class='badge' style='".$bg1."'>".($progress_keuangan)." <b>%</b>  </center></a>";
+				        	$table_append.="</td>";
+
+
+
 				        	 
 
 
-					        if (($check_child=="true") and ($id_table=="1")){
+					    if (($check_child=="true") and ($id_table=="1")){
 					        	 $table.=$table_append;
 					        }	else {
 					        	 $table.=$table_append;
@@ -1730,7 +1905,7 @@ class capaian_renja_model extends CI_Model{
 						}	
 
 						
-				        	if ($this->cek_child_anak($id,$data_f->parent)) {
+				        if ($this->cek_child_anak($id,$data_f->parent)) {
 								$table.=$this->get_child_capaian_all($id,$id_table,trim($data_f->kode));
 						}
 					}	
@@ -1834,8 +2009,7 @@ class capaian_renja_model extends CI_Model{
 					$table.="<td style='".$style.";vertical-align:middle;'>".$data_f->kode_direktorat."</td>";
 					$table.="<td style='".$style.";vertical-align:middle;' colspan='3'>".strtoupper($data_f->program)."</td>";
 					$table.="<td style='".$style.";vertical-align:middle;'>".strtoupper($data_f->sasaran_program)."</td>";
-					$table.="<td style='".$style.";vertical-align:middle;'>".$data_f->target."</td>"; 
-					$table.="<td style='".$style.";vertical-align:middle;'>".number_format($total_all_pagu)."</td>"; 
+ 					$table.="<td style='".$style.";vertical-align:middle;'>".number_format($total_all_pagu)."</td>"; 
 
 				        $class_xeditable='';
 				        if ($this->session->userdata('ID_DIREKTORAT')==$data_f->dari){
@@ -1920,7 +2094,7 @@ class capaian_renja_model extends CI_Model{
 				        	$table.="</td>";*/
 
 				        	$table.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
-				        	$table.="<a style='text-decoration:none'><center>  </center></a>";
+				        	$table.="<a style='text-decoration:none'><center>-</center></a>";
 				        	$table.="</td>";
 				        	
 							$table.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
@@ -1928,18 +2102,18 @@ class capaian_renja_model extends CI_Model{
 				        	$table.="</td>";
 				        	
 				        	$table.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
-				        	$table.="<a style='text-decoration:none'><center> - </center></a>";
-				        	$table.="</td>";
-				        	
-				        	$table.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
-				        	$table.="<a style='text-decoration:none'><center> - </center></a>";
-				        	$table.="</td>";
-				        	
-				        	$table.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
 				        	$table.="<a style='text-decoration:none'><center>-</center></a>";
 				        	$table.="</td>";
+				        	
+				        	$table.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
+				        	$table.="<a style='text-decoration:none' id='total_target_capaian'><center>   </center></a>";
+				        	$table.="</td>";
+				        	
+				        	$table.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
+				        	$table.="<a style='text-decoration:none'  id='total_realisasi_capaian'><center>-</center></a>";
+				        	$table.="</td>";
  							
- 							$table.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
+ 							$table.="<td class='triwulan_1'  id='persentase_realisasi_keuangan' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
 				        	$table.="<a style='text-decoration:none'><center> - </center></a>";
 				        	$table.="</td>";
 				        
@@ -2283,7 +2457,7 @@ class capaian_renja_model extends CI_Model{
 			        } else {
 			        	$percentange=($c_01+$c_02+$c_03+$c_04+$c_05+$c_06+$c_07+$c_08+$c_09+$c_10+$c_11+$c_12)/12;
 			        }	
-		       	   $table.="<td style='".$style.";vertical-align:middle;'>".number_format($percentange,1)."</td>"; 
+		       	   $table.="<td style='".$style.";vertical-align:middle;'><center>".number_format($percentange,1)."</center></td>"; 
 
 
 		        /* AMBIL CAPAIAN KEUANGAN */
@@ -2477,10 +2651,21 @@ class capaian_renja_model extends CI_Model{
 	        } else {
 	        	$percentange=($c_01+$c_02+$c_03+$c_04+$c_05+$c_06+$c_07+$c_08+$c_09+$c_10+$c_11+$c_12)/12;
 	        }	
-       	 $table.="<td  class='' style='".$style.";vertical-align:middle;'><center>".number_format($percentange,1)." % </center>  </td>"; 
+	        $sisa=0;
+	        $sisa=$total_kesamping-$total_all_pagu;	        
+       	 	$table.="<td  class='' style='".$style.";vertical-align:middle;'><center>".number_format($percentange,1)." % </center>  </td>"; 
+
+
+				        	if($sisa=="0"){
+				        		$color=" ; background-color:#36D195 ; ";
+				        	} else {
+				        		$color=" ; background-color:#E74C3C ; ";
+				        	}
+       	 	$table.="<td  class='' style='".$style.";vertical-align:middle;'><center  style='".$color."' class='badge'>Rp. ".number_format($sisa)."</center>  </td>"; 
+       	 	
 	        $table.="</tr>";	        	
 	        	if ($this->cek_child($id,$data_f->parent)) {
-					$table.=$this->get_child_capaian_target($id,$id_table,$data_f->parent,$komparasi);
+						$table.=$this->get_child_capaian_target($id,$id_table,$data_f->parent,$komparasi);
 					}  		 			        	
 			 	} 
 			} else {
@@ -2706,14 +2891,15 @@ class capaian_renja_model extends CI_Model{
 								$total_pagu=$total_all;
 							}
 
-							$target_kinerja=$data_f->target_kinerja ? $data_f->target_kinerja." <b> % </b>" : "-" ;
-							$target_keuangan=$data_f->target_keuangan ? number_format($data_f->target_keuangan) : "-" ;
-							$target_keuangan2=$data_f->target_keuangan ? ($data_f->target_keuangan) : "" ;
+						$target_kinerja=$data_f->target_kinerja ? $data_f->target_kinerja." <b> % </b>" : "-" ;
+						$target_keuangan=$data_f->target_keuangan ? number_format($data_f->target_keuangan) : "-" ;
+						//$target_keuangan2=$data_f->target_keuangan ? ($data_f->target_keuangan) : "" ;
 							//$total_pagu=$data_f->target_keuangan;
+						$total_pagu_bagi=$total_pagu;
+						$table.="<td style='".$style_header."'> ".(($data_f->sasaran_kegiatan))." </td>";
+    					$table.="<td style='".$style_header."'> ".(number_format($total_pagu))." </td>";
+ 						
 
-							$table.="<td style='".$style_header."'> ".(($data_f->sasaran_kegiatan))." </td>";
-    							$table.="<td style='".$style_header."'> ".(number_format($total_pagu))." </td>";
- 	
 		 				$this_month_01="";$this_month_02="";$this_month_03="";$this_month_04="";$this_month_05="";
 		 				$this_month_06="";$this_month_07="";$this_month_08="";$this_month_09="";$this_month_10="";
 		 				$this_month_11="";$this_month_12="";
@@ -3116,7 +3302,16 @@ class capaian_renja_model extends CI_Model{
 							$table_append.="</td>";
 
 				        	$percentange=0;
-				        	if($id_table!="1"){
+				        	if(($total_pagu_bagi=="") or($total_pagu_bagi=="0")){
+				        		$total_pagu_bagi=1;
+				        	}
+
+				        	$percentange=($total_kesamping / $total_pagu_bagi) * 100;
+				        	
+				        	if(($total_pagu_bagi=="") or ($total_pagu_bagi=="0")  or ($total_pagu_bagi=="1")){
+				        		$percentange=0;
+				        	}
+				        	/*if($id_table!="1"){
 					        	if($target_keuangan2 > 0){
 						        	$percentange=($total_kesamping / $target_keuangan2 ) * 100;
 								}
@@ -3125,11 +3320,19 @@ class capaian_renja_model extends CI_Model{
 								}
 							} else {
 								$percentange=$total_kesamping;
-							}	
+							}	*/
+							$sisa=$total_kesamping-$total_pagu;	        
+        	 	
 				        	$table_append.="<td class='' style='vertical-align:middle;font-size:10px;'>";
 				        	$table_append.="<center><b>".strtoupper(trim(number_format($percentange,1)))." % </b> </center></a>";
 				        	$table_append.="</td>";
-
+				        	$color="";
+				        	if($sisa=="0"){
+				        		$color=" ; background-color:#36D195 ; ";
+				        	} else {
+				        		$color=" ; background-color:#E74C3C ; ";
+				        	}
+				        	$table_append.="<td style='vertical-align:middle;font-size:10px;'><center style='".$color."'  class='badge' >Rp. ".number_format($sisa)."</center>  </td>"; 
 							$table.=$table_append;
 				        }
 
@@ -3188,6 +3391,19 @@ class capaian_renja_model extends CI_Model{
 		(select c_11 from capaian_".$tipe_capaian." where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_11',
 		(select c_12 from capaian_".$tipe_capaian." where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_12',
 
+		(select c_01 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_01_target_kinerja',
+		(select c_02 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_02_target_kinerja',
+		(select c_03 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_03_target_kinerja',
+		(select c_04 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_04_target_kinerja',
+		(select c_05 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_05_target_kinerja',
+		(select c_06 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_06_target_kinerja',
+		(select c_07 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_07_target_kinerja',
+		(select c_08 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_08_target_kinerja',
+		(select c_09 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_09_target_kinerja',
+		(select c_10 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_10_target_kinerja',
+		(select c_11 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_11_target_kinerja',
+		(select c_12 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_12_target_kinerja',
+
 		(select c_01 from capaian_keuangan where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_01_keuangan',
 		(select c_02 from capaian_keuangan where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_02_keuangan',
 		(select c_03 from capaian_keuangan where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_03_keuangan',
@@ -3200,6 +3416,19 @@ class capaian_renja_model extends CI_Model{
 		(select c_10 from capaian_keuangan where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_10_keuangan',
 		(select c_11 from capaian_keuangan where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_11_keuangan',
 		(select c_12 from capaian_keuangan where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_12_keuangan',
+
+		(select c_01 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_01_keuangan_target',
+		(select c_02 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_02_keuangan_target',
+		(select c_03 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_03_keuangan_target',
+		(select c_04 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_04_keuangan_target',
+		(select c_05 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_05_keuangan_target',
+		(select c_06 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_06_keuangan_target',
+		(select c_07 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_07_keuangan_target',
+		(select c_08 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_08_keuangan_target',
+		(select c_09 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_09_keuangan_target',
+		(select c_10 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_10_keuangan_target',
+		(select c_11 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_11_keuangan_target',
+		(select c_12 from capaian_keuangan_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_12_keuangan_target',
 
 		(select 
 			sum(c_01+c_02+c_03+c_04+c_05+c_06+c_07+c_08+c_09+c_10+c_11+c_12) as jumlah
@@ -3255,6 +3484,7 @@ class capaian_renja_model extends CI_Model{
 			        		$class_xeditable='text_'.$tipe_capaian.'';
 			        	}	
 			        	$pembagi_keuangan=1;
+			        	$target_keuangan_semua="0";
 	 					$table.="<tr>";
 						if($data_f->tipe=="indikator"){
 							$style_header.=";font-weight:bold;";
@@ -3325,8 +3555,9 @@ class capaian_renja_model extends CI_Model{
 							$c_08_keuangan_target+
 							$c_10_keuangan_target+
 							$c_12_keuangan_target;
-							$table_capaian_appen_keuangan="<td style='".$style_header.";vertical-align:middle;'><b><center>".number_format($sum_target_indikator)."</center></b></td>";
-
+							$table_capaian_appen_keuangan="<td style='".$style_header.";vertical-align:middle;'><b><center>
+							".number_format($sum_target_indikator)."</center></b></td>";
+							$target_keuangan_semua=$sum_target_indikator;
 							$pembagi_keuangan=$sum_target_indikator;
 							$target_keuangan2=$pembagi_keuangan;
  						} else if($data_f->tipe=="komponen_input"){
@@ -3346,7 +3577,19 @@ class capaian_renja_model extends CI_Model{
 
 							$table.="<td style='".$style_header.";vertical-align:middle;'> ".(($data_f->komponen_input))." </td>";
 							$check_child=$this->cek_child_komponen_input($data_f->kode,$data_f->id_data_renja);
-		 				 
+		 				 	
+		 				 	$c_01_keuangan_target=$data_f->c_01_keuangan_target;
+							$c_02_keuangan_target=$data_f->c_02_keuangan_target;
+							$c_03_keuangan_target=$data_f->c_03_keuangan_target;
+							$c_04_keuangan_target=$data_f->c_04_keuangan_target;
+							$c_05_keuangan_target=$data_f->c_05_keuangan_target;
+							$c_06_keuangan_target=$data_f->c_06_keuangan_target;
+							$c_07_keuangan_target=$data_f->c_07_keuangan_target;
+							$c_08_keuangan_target=$data_f->c_08_keuangan_target;
+							$c_09_keuangan_target=$data_f->c_09_keuangan_target;
+							$c_10_keuangan_target=$data_f->c_10_keuangan_target;
+							$c_11_keuangan_target=$data_f->c_11_keuangan_target;
+							$c_12_keuangan_target=$data_f->c_12_keuangan_target;
 									
 							$c_01=$data_f->c_01;
 							$c_02=$data_f->c_02;
@@ -3389,6 +3632,7 @@ class capaian_renja_model extends CI_Model{
 							$target_keuangan2=$pembagi_keuangan;
 
 							$table_capaian_appen_keuangan="<td style='".$style_header.";vertical-align:middle;width:70px !important;'><b><center>".number_format($data_f->target_keuangan_dari_table)."</center></b></td>";
+							$target_keuangan_semua=$data_f->target_keuangan_dari_table;
 							if ($this->session->userdata('ID_DIREKTORAT')==$data_f->dari){
 			        			$class_xeditable_keuangan="text_keuangan";
 			        		}	
@@ -3435,13 +3679,13 @@ class capaian_renja_model extends CI_Model{
  				 			$table.="<td style='".$style_header."'><center>".number_format($total_pagu)."</center></td>"; 
 							//$table.="<td style='".$style_header.";vertical-align:middle;'><b>".($target_keuangan)."</b></td>"; 
 							
-							$table.=$table_capaian_appen_keuangan; 
+							
 
 
 							$target_keuangan=$data_f->target_keuangan_dari_table;
 							$style_header="vertical-align:middle;font-size:10px;height:50px;width:70px !important;";
 							$table.="<td style='".$style_header.";vertical-align:middle;'><b><center>".$target_kinerja."</center></b></td>"; 
-
+							$table.=$table_capaian_appen_keuangan; 
  	
 		 				$this_month_01="";$this_month_02="";$this_month_03="";$this_month_04="";$this_month_05="";
 		 				$this_month_06="";$this_month_07="";$this_month_08="";$this_month_09="";$this_month_10="";
@@ -3453,29 +3697,29 @@ class capaian_renja_model extends CI_Model{
 	 					
 
  			        	if(date("m")=="01"){
-			        		$this_month_01=" background-color:#C07B6B;color:#fff;";$color_01=";color:#fff;";
+			        		$this_month_01=" background-color:#C07B6B;color:#000;";$color_01=";color:#000;";
 			        	} else if(date("m")=="02"){
-			        		$this_month_02=" background-color:#C07B6B;color:#fff;";$color_02=";color:#fff;";
+			        		$this_month_02=" background-color:#C07B6B;color:#000;";$color_02=";color:#000;";
 			        	}  else if(date("m")=="03"){
-			        		$this_month_03=" background-color:#C07B6B;color:#fff;";$color_03=";color:#fff;";
+			        		$this_month_03=" background-color:#C07B6B;color:#000;";$color_03=";color:#000;";
 			        	} else if(date("m")=="04"){
-			        		$this_month_04=" background-color:#C07B6B;color:#fff;";$color_04=";color:#fff;";
+			        		$this_month_04=" background-color:#C07B6B;color:#000;";$color_04=";color:#000;";
 			        	} else if(date("m")=="05"){
-			        		$this_month_05=" background-color:#C07B6B;color:#fff;";$color_05=";color:#fff;";
+			        		$this_month_05=" background-color:#C07B6B;color:#000;";$color_05=";color:#000;";
 			        	} else if(date("m")=="06"){
-			        		$this_month_06=" background-color:#C07B6B;color:#fff;";$color_06=";color:#fff;";
+			        		$this_month_06=" background-color:#C07B6B;color:#000;";$color_06=";color:#000;";
 			        	} else if(date("m")=="07"){
-			        		$this_month_07=" background-color:#C07B6B;color:#fff;";$color_07=";color:#fff;";
+			        		$this_month_07=" background-color:#C07B6B;color:#000;";$color_07=";color:#000;";
 			        	} else if(date("m")=="08"){
-			        		$this_month_08=" background-color:#C07B6B;color:#fff;";$color_08=";color:#fff;";
+			        		$this_month_08=" background-color:#C07B6B;color:#000;";$color_08=";color:#000;";
 			        	} else if(date("m")=="09"){
-			        		$this_month_09=" background-color:#C07B6B;color:#fff;";$color_09=";color:#fff;";
+			        		$this_month_09=" background-color:#C07B6B;color:#000;";$color_09=";color:#000;";
 			        	} else if(date("m")=="10"){
-			        		$this_month_10=" background-color:#C07B6B;color:#fff;";$color_10=";color:#fff;";
+			        		$this_month_10=" background-color:#C07B6B;color:#000;";$color_10=";color:#000;";
 			        	} else if(date("m")=="11"){
-			        		$this_month_11=" background-color:#C07B6B;color:#fff;";$color_11=";color:#fff;";
+			        		$this_month_11=" background-color:#C07B6B;color:#000;";$color_11=";color:#000;";
 			        	} else if(date("m")=="12"){
-			        		$this_month_12=" background-color:#C07B6B;color:#fff;";$color_12=";color:#fff;";
+			        		$this_month_12=" background-color:#C07B6B;color:#000;";$color_12=";color:#000;";
 			        	}
 
 			        	$rp_triwulan_1=($c_01+$c_02+$c_03);
@@ -3497,140 +3741,297 @@ class capaian_renja_model extends CI_Model{
 				        	$rp_triwulan_3=number_format($rp_triwulan_3);
 				        	$rp_triwulan_4=number_format($rp_triwulan_4);
 
-				        	if($id_table=="1"){
+				        	/*if($id_table=="1"){
 				        		$rp_triwulan_1="-";
 				        		$rp_triwulan_2="-";
 				        		$rp_triwulan_3="-";
 				        		$rp_triwulan_4="-";
-				        	}  				       
+				        	} */ 				       
 
 			        	$table_append="";
 			        	if ($this->session->userdata('ID_DIREKTORAT')==$data_f->dari){
 			        			//$class_xeditable='text_'.$tipe_capaian.'';
 			        			$class_xeditable="text_kinerja";
 			        	}	
+			        	$c_01_target_kinerja=$data_f->c_01_target_kinerja;
+						$c_02_target_kinerja=$data_f->c_02_target_kinerja;
+						$c_03_target_kinerja=$data_f->c_03_target_kinerja;
+						$c_04_target_kinerja=$data_f->c_04_target_kinerja;
+						$c_05_target_kinerja=$data_f->c_05_target_kinerja;
+						$c_06_target_kinerja=$data_f->c_06_target_kinerja;
+						$c_07_target_kinerja=$data_f->c_07_target_kinerja;
+						$c_08_target_kinerja=$data_f->c_08_target_kinerja;
+						$c_09_target_kinerja=$data_f->c_09_target_kinerja;
+						$c_10_target_kinerja=$data_f->c_10_target_kinerja;
+						$c_11_target_kinerja=$data_f->c_11_target_kinerja;
+						$c_12_target_kinerja=$data_f->c_12_target_kinerja; 
 
-			        	$table_append.="<td class='triwulan_1 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_01."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_01."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(1,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_01)))."</center></a>";
-			        	$table_append.="</td>";
-			        	
-			        	$table_append.="<td class='triwulan_1 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_02."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_02."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(2,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_02)))."</center></a>";
-			        	$table_append.="</td>";
+			        	$table_append.="<td class='triwulan_1 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_01."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_01_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_01."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(1,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_01)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
 
 
-			        	$table_append.="<td class='triwulan_1 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_03."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_03."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(3,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_03)))."</center></a>";
-			        	$table_append.="</td>";
+						$table_append.="<td class='triwulan_1 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_02."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_02_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_02."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(1,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_02)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
+			         
 
-			        	/*$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;'>
-				        	<center>".$rp_triwulan_1."</center></td>"; 
-				        $table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;'>
+
+			        	$table_append.="<td class='triwulan_1 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_03."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_03_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_03."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(3,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_03)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
+			         
+
+ 
+
+			        	$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;'>
+				        	<center>".$rp_triwulan_1." <b>%</b> </center></td>"; 
+
+				        /*$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;'>
 				        	<center><b><span style='color:#fff'>'</span>".number_format($persen_triwulan_1,1)."</b></center></td>";*/
 
-			        	$table_append.="<td class='triwulan_2 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_04."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_04."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(4,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_04)))."</center></a>";
-			        	$table_append.="</td>";
+
+			        	$table_append.="<td class='triwulan_2 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_04."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_04_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_04."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(4,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_04)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
 
 
-			        	$table_append.="<td class='triwulan_2 '  style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_05."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_05."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(5,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_05)))."</center></a>";
-			        	$table_append.="</td>";
 
-			        	$table_append.="<td class='triwulan_2 '  style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_06."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_06."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(6,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_06)))."</center></a>";
-			        	$table_append.="</td>";
+						$table_append.="<td class='triwulan_2 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_05."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_05_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_05."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(5,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_05)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
 
-			        	/*$table_append.="<td class='triwulan_2'  style='vertical-align:middle;font-size:10px;'>
-				        	<center>".$rp_triwulan_2."</center></td>";
-				        $table_append.="<td class='triwulan_2'  style='vertical-align:middle;font-size:10px;'>
+
+			        	 
+						$table_append.="<td class='triwulan_2 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$color_06."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_06_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_06."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(6,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_06)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
+
+ 
+
+			        	$table_append.="<td class='triwulan_2'  style='vertical-align:middle;font-size:10px;'>
+				        	<center>".$rp_triwulan_2." <b>%</b> </center></td>";
+				        /*$table_append.="<td class='triwulan_2'  style='vertical-align:middle;font-size:10px;'>
 				        	<center><b><span style='color:#fff'>'</span>".number_format($persen_triwulan_2,1)."</b></center></td>";*/
 
+				        $table_append.="<td class='triwulan_3 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_07."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_07_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_07."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(7,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_07)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";	
 
-			        	$table_append.="<td class='triwulan_3 '  style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_07."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_07."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(7,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_07)))."</center></a>";
-			        	$table_append.="</td>";
+			        	$table_append.="<td class='triwulan_3 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_08."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_08_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_08."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(8,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_08)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";	
+
+						$table_append.="<td class='triwulan_3 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_09."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_09_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_09."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(9,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_09)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";	
+
+ 
 
 
-			        	$table_append.="<td  class='triwulan_3 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_08."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_08."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(8,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_08)))."</center></a>";
-			        	$table_append.="</td>";
-
-
-			        	$table_append.="<td  class='triwulan_3 ' style='width:50px !important;vertical-align:middle;font-size:10px;".$this_month_09."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_09."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(9,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_09)))."</center></a>";
-			        	$table_append.="</td>";
-
-			        	/*$table_append.="<td  class='triwulan_3' style='vertical-align:middle;font-size:10px;'>
-				        	<center>".$rp_triwulan_3."</center></td>"; 
-				        $table_append.="<td  class='triwulan_3' style='vertical-align:middle;font-size:10px;'>
+			         
+			        	$table_append.="<td  class='triwulan_3' style='vertical-align:middle;font-size:10px;'>
+				        	<center>".$rp_triwulan_3." <b>%</b> </center></td>"; 
+				       /*$table_append.="<td  class='triwulan_3' style='vertical-align:middle;font-size:10px;'>
 				        	<center><b><span style='color:#fff'>'</span>".number_format($persen_triwulan_3,1)."</b></center></td>";*/
 
-			        	$table_append.="<td  class='triwulan_4 ' style='vertical-align:middle;font-size:10px;".$this_month_10."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_10."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(10,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_10)))."</center></a>";
-			        	$table_append.="</td>";
+				        
+				        $table_append.="<td class='triwulan_4 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_10."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_10_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_10."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(10,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_10)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";	
 
+						$table_append.="<td class='triwulan_4 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_11."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_11_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_11."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(11,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_11)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";	
 
-			        	$table_append.="<td class='triwulan_4 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_11."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_11."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(11,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_11)))."</center></a>";
-			        	$table_append.="</td>";
-
-
-			        	$table_append.="<td class='triwulan_4 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_12."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_12."'  
-			        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(12,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_12)))."</center></a>";
-			        	$table_append.="</td>";		
-
-			        	/*$table_append.="<td class='triwulan_4' style='vertical-align:middle;font-size:10px;'>
-				        	<center>".$rp_triwulan_4."</center></td>"; 
-				        $table_append.="<td class='triwulan_4' style='vertical-align:middle;font-size:10px;'>
+			         	
+			         	$table_append.="<td class='triwulan_4 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_12."'>";
+			        	$table_append.="<table style='width:100% ;min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_12_target_kinerja))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table_append.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_11."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(12,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_12)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";	
+ 
+			        	$table_append.="<td class='triwulan_4' style='vertical-align:middle;font-size:10px;'>
+				        	<center>".$rp_triwulan_4." <b>%</b> </center></td>"; 
+				        /*$table_append.="<td class='triwulan_4' style='vertical-align:middle;font-size:10px;'>
 				        	<center><b><span style='color:#fff'>'</span>".number_format($persen_triwulan_4,1)."</b></center></td>";	    */    	
 			        		$total_kesamping=0;
 
@@ -3657,6 +4058,10 @@ class capaian_renja_model extends CI_Model{
 				        	$rp_triwulan_2+
 				        	$rp_triwulan_3+
 				        	$rp_triwulan_4 ;
+ 				        	$table_append.="<td style='width:70px !important;vertical-align:middle;font-size:10px; '>";
+				        	$table_append.="<center><b>".strtoupper(trim($percentange))." % &nbsp; </b></center></a>";
+				        	$table_append.="</td>";
+
 				        	$table_append.="<td style='width:70px !important;vertical-align:middle;font-size:10px; '>";
 				        	$table_append.="<center><b>".strtoupper(trim($persentase_semua))." % &nbsp; </b></center></a>";
 				        	$table_append.="</td>";
@@ -3698,11 +4103,18 @@ class capaian_renja_model extends CI_Model{
 						        $persen_triwulan_2=0;
 						        $persen_triwulan_3=0;
 						        $persen_triwulan_4=0;
+
   							if(($pembagi_keuangan!="")){				        	 
 	 				        	$persen_triwulan_1=(($rp_triwulan_1) / $pembagi) * $kali_seratus;
 						        $persen_triwulan_2=(($rp_triwulan_2) / $pembagi) * $kali_seratus;
 						        $persen_triwulan_3=(($rp_triwulan_3) / $pembagi) * $kali_seratus;
 						        $persen_triwulan_4=(($rp_triwulan_4) / $pembagi) * $kali_seratus;
+						    }
+						    if(($target_keuangan2=="0") or($target_keuangan2=="")){
+						    	$persen_triwulan_1=0;
+						        $persen_triwulan_2=0;
+						        $persen_triwulan_3=0;
+						        $persen_triwulan_4=0;
 						    }
 				        	$rp_triwulan_1=number_format($rp_triwulan_1);
 				        	$rp_triwulan_2=number_format($rp_triwulan_2);
@@ -3715,60 +4127,150 @@ class capaian_renja_model extends CI_Model{
 				        		$rp_triwulan_3="-";
 				        		$rp_triwulan_4="-";
 				        	} 
-				        $table_append.="<td class='triwulan_1 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_01."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_01."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(1,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_01_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
-			        	
-			        	$table_append.="<td class='triwulan_1 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_02."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_02."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(2,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_02_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
+
+				        /*$c_01_keuangan_target=$data_f->c_01_keuangan_target;
+						$c_02_keuangan_target=$data_f->c_02_keuangan_target;
+						$c_03_keuangan_target=$data_f->c_03_keuangan_target;
+						$c_04_keuangan_target=$data_f->c_04_keuangan_target;
+						$c_05_keuangan_target=$data_f->c_05_keuangan_target;
+						$c_06_keuangan_target=$data_f->c_06_keuangan_target;
+						$c_07_keuangan_target=$data_f->c_07_keuangan_target;
+						$c_08_keuangan_target=$data_f->c_08_keuangan_target;
+						$c_09_keuangan_target=$data_f->c_09_keuangan_target;
+						$c_10_keuangan_target=$data_f->c_10_keuangan_target;
+						$c_11_keuangan_target=$data_f->c_11_keuangan_target;
+						$c_12_keuangan_target=$data_f->c_12_keuangan_target;*/
+
+				        
+
+			        	$table_append.="<td class='triwulan_1 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_01."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_01_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_01."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(1,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_01_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
 
 
-			        	$table_append.="<td class='triwulan_1 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_03."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_03."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(3,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_03_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
+						$table_append.="<td class='triwulan_1 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_02."'>";
+			        	$table_append.="<table  style='width:100% ;    min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2;   min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_02_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_02."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(2,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_02_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
+
+			         	
+						$table_append.="<td class='triwulan_1 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_03."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_03_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_03."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(3,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_03_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
+
+			        	 
 
 			        	$table_append.="<td class='triwulan_1 ' style='width:70px !important;vertical-align:middle;font-size:10px;'>
 				        	<center>".$rp_triwulan_1."</center></td>";
 				        $table_append.="<td class='triwulan_1 ' style='width:70px !important;vertical-align:middle;font-size:10px;'>
 				        	<center><b><span style='color:#fff'>'</span>".number_format($persen_triwulan_1,1)." % </b></center></td>";
 
-			        	$table_append.="<td class='triwulan_2 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_04."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_04."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(4,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_04_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
+
+				        $table_append.="<td class='triwulan_2 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_04."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;    min-width: 80px !important;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_04_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_04."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(4,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_04_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
 
 
-			        	$table_append.="<td class='triwulan_2 '  style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_05."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_05."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(5,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_05_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
+						$table_append.="<td class='triwulan_2 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_05."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;    min-width: 80px !important;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_05_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_05."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(5,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_05_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
 
-			        	$table_append.="<td class='triwulan_2 '  style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_06."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_06."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(6,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_06_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
+			         
+						$table_append.="<td class='triwulan_2 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_06."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_06_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_06."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(6,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_06_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
+
+
+ 
 
 			        	$table_append.="<td class='triwulan_2 '  style='width:10px !important;vertical-align:middle;font-size:10px;'>
 				        	<center>".$rp_triwulan_2."</center></td>";
@@ -3776,62 +4278,130 @@ class capaian_renja_model extends CI_Model{
 				        	<center><b><span style='color:#fff'>'</span>".number_format($persen_triwulan_2,1)."  %  </b></center></td>";
 
 
-			        	$table_append.="<td class='triwulan_3 '  style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_07."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_07."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(7,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_07_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
+				        $table_append.="<td class='triwulan_3 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_07."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;    min-width: 80px !important;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_07_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_07."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(7,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_07_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
 
+			         	$table_append.="<td class='triwulan_3 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_08."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;    min-width: 80px !important;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_08_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_08."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(8,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_08_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
 
-			        	$table_append.="<td  class='triwulan_3 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_08."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_08."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(8,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_08_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
-
-
-			        	$table_append.="<td  class='triwulan_3 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_09."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_09."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(9,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_09_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
+			        	 
+						$table_append.="<td class='triwulan_3 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_09."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_09_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_09."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(9,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_09_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
+ 
 
 			        	$table_append.="<td  class='triwulan_3 ' style='width:40px !important;vertical-align:middle;font-size:10px;'>
 				        	<center>".$rp_triwulan_3."</center></td>";
 				        $table_append.="<td  class='triwulan_3 ' style='width:40px !important;vertical-align:middle;font-size:10px;'>
 				        	<center><b><span style='color:#fff'>'</span>".number_format($persen_triwulan_3,1)."  %  </b></center></td>";
 
-			        	$table_append.="<td  class='triwulan_4 ' style='width:40px !important;vertical-align:middle;font-size:10px;".$this_month_10."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_10."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(10,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_10_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
+				        
+				        $table_append.="<td class='triwulan_4 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_10."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_10_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_10."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(10,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_10_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
+
+			         	$table_append.="<td class='triwulan_4 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_11."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;    min-width: 80px !important;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_11_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_11."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(11,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_11_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
 
 
-			        	$table_append.="<td class='triwulan_4 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_11."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_11."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(11,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_11_keuangan)))."</center></a>";
-			        	$table_append.="</td>";
+			        	$table_append.="<td class='triwulan_4 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_12."'>";
+			        	$table_append.="<table style='width:100% ;    min-height: 100px;    min-width: 80px !important;'>";
+				        	$table_append.="<tr>";
+					        	$table_append.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table_append.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_12_keuangan_target))).")</b></a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table_append.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_12."'  
+							        	class='".$class_xeditable_keuangan." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(12,1,1,".$data_f->id.",1)'>
+							        	".strtoupper(trim(number_format($c_12_keuangan)))."</a></center>";
+					        	$table_append.="</td>";
+					        	$table_append.="</tr>";
+						$table_append.="</table>";  	
+						$table_append.="</td>";
 
-
-			        	$table_append.="<td class='triwulan_4 ' style='width:10px !important;vertical-align:middle;font-size:10px;".$this_month_12."'>";
-			        	$table_append.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_12."'  
-			        	class='".$class_xeditable_keuangan."' id='".$data_f->id."' data-type='text' 
-			        	data-placement='right' data-id='".$tipe_capaian."' 
-			        	data-title='Masukan Nilai Baru' onclick='return save_bulan(12,1,1,".$data_f->id.",1)'>
-			        	<center>".strtoupper(trim(number_format($c_12_keuangan)))."</center></a>";
-			        	$table_append.="</td>";		
+			        
 
 			        	$table_append.="<td class='triwulan_4 ' style='width:40px !important;vertical-align:middle;font-size:10px;'>
 				        	<center>".$rp_triwulan_4."</center></td>";
@@ -3863,10 +4433,27 @@ class capaian_renja_model extends CI_Model{
  				        	$table_append.="<td class='' style='width:40px !important;vertical-align:middle;font-size:10px;width:50px !important'>";
 				        	$table_append.="<center><b>".strtoupper(trim(number_format($percentange,1)))." % </b> </center></a>";
 				        	$table_append.="</td>";
+				        	$sisa_pagu=$total_kesamping-$total_pagu;	   
+						    $sisa_target=$total_kesamping-$target_keuangan_semua;	   
+						    if(($sisa_pagu=="0") or ($sisa_pagu > 0)){
+					    		$color1=" ; background-color:#36D195 ; ";
+					    	} else {
+					    		$color1=" ; background-color:#E74C3C ; ";
+					    	}
+
+					    	if(($sisa_target=="0") or($sisa_target > 0 )){
+					    		$color2=" ; background-color:#36D195 ; ";
+					    	} else {
+					    		$color2=" ; background-color:#E74C3C ; ";
+					    	}
+
+ 					       	$table_append.="<td style='vertical-align:middle;font-size:10px;'><center style='".$color2."'  class='badge' >Rp. ".number_format($sisa_target)."</center>  </td>"; 
+					       	$table_append.="<td style='vertical-align:middle;font-size:10px;'><center style='".$color1."'  class='badge' >Rp. ".number_format($sisa_pagu)."</center>  </td>"; 
 				        	$table_append.="</tr>";
 				        	$table_append.="<tr style='display:none' id='detail_dok_".$data_f->id."'>";
 				        	$table_append.="<td colspan='52' style='background-color:#dedede;padding:5px' id='data_detail_dok_".$data_f->id."'>";
 				        	$table_append.="</td>";
+
 				        	
 							$table.=$table_append;
 
@@ -4245,15 +4832,15 @@ class capaian_renja_model extends CI_Model{
  		$style=";font-size:10px;font-weight:bold;padding:10px";
 		if($id_table=="1"){
 	           $tipe_capaian="kinerja";
-	        } else  if($id_table=="2"){
+	    } else  if($id_table=="2"){
 	           $tipe_capaian="keuangan";
-	        } else  if($id_table=="3"){
+	    } else  if($id_table=="3"){
 	           $tipe_capaian="phln";
-	        } else  if($id_table=="4"){
+	    } else  if($id_table=="4"){
 	           $tipe_capaian="dktp";
-	        } else  if($id_table=="5"){
+	    } else  if($id_table=="5"){
 	           $tipe_capaian="lakip";
-	        } else  if($id_table=="6"){
+	    } else  if($id_table=="6"){
 	           $tipe_capaian="renaksi";
 		}
  		$query=$this->db->query("select *,template_renja.tahun_anggaran as tahun_anggaran,m_unit_kerja.kd_unit_kerja,a.id as id,tahun_anggaran.tahun_anggaran as tahun,
@@ -4270,6 +4857,19 @@ class capaian_renja_model extends CI_Model{
 		(select c_11 from capaian_".$tipe_capaian." where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_11',
 		(select c_12 from capaian_".$tipe_capaian." where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_12',
 		
+		(select c_01 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_01_target_kinerja',
+		(select c_02 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_02_target_kinerja',
+		(select c_03 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_03_target_kinerja',
+		(select c_04 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_04_target_kinerja',
+		(select c_05 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_05_target_kinerja',
+		(select c_06 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_06_target_kinerja',
+		(select c_07 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_07_target_kinerja',
+		(select c_08 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_08_target_kinerja',
+		(select c_09 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_09_target_kinerja',
+		(select c_10 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_10_target_kinerja',
+		(select c_11 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_11_target_kinerja',
+		(select c_12 from capaian_".$tipe_capaian."_target where trim(kode_direktorat_child)=trim(a.kode_direktorat_child) and trim(kode)=trim(a.kode) and trim(parent)=trim(a.parent) and tahun=template_renja.tahun_anggaran) as 'c_12_target_kinerja',
+
 		(select 
 			sum(c_01+c_02+c_03+c_04+c_05+c_06+c_07+c_08+c_09+c_10+c_11+c_12) as jumlah
 			from capaian_keuangan_target where tahun=template_renja.tahun_anggaran
@@ -4326,8 +4926,9 @@ class capaian_renja_model extends CI_Model{
 					$table.="<td style='".$style.";vertical-align:middle;' colspan='3'>".strtoupper($data_f->program)."</td>";
 					$table.="<td style='".$style.";vertical-align:middle;'>".strtoupper($data_f->sasaran_program)."</td>";
  					$table.="<td style='".$style.";vertical-align:middle;'><b>".number_format($total_all_pagu)."</b></td>"; 
-					$table.="<td style='".$style.";vertical-align:middle;'><center>".number_format($data_f->target_keuangan_dari_table)."</center></td>";$table.="<td style='".$style.";vertical-align:middle;'><center>-</center></td>"; 
-					
+					$table.="<td style='".$style.";vertical-align:middle;'><center>-</center></td>"; 
+					$table.="<td style='".$style.";vertical-align:middle;'><center>".number_format($data_f->target_keuangan_dari_table)."</center></td>";
+					$total_target=$data_f->target_keuangan_dari_table;
 						/*$c_01=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'01',$data_f->tahun_anggaran,'realisasi',$id);
 						$c_02=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'02',$data_f->tahun_anggaran,'realisasi',$id);
 						$c_03=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'03',$data_f->tahun_anggaran,'realisasi',$id);
@@ -4353,6 +4954,20 @@ class capaian_renja_model extends CI_Model{
 						$c_10=$data_f->c_10;
 						$c_11=$data_f->c_11;
 						$c_12=$data_f->c_12; 
+
+						$c_01_target_kinerja=$data_f->c_01_target_kinerja;
+						$c_02_target_kinerja=$data_f->c_02_target_kinerja;
+						$c_03_target_kinerja=$data_f->c_03_target_kinerja;
+						$c_04_target_kinerja=$data_f->c_04_target_kinerja;
+						$c_05_target_kinerja=$data_f->c_05_target_kinerja;
+						$c_06_target_kinerja=$data_f->c_06_target_kinerja;
+						$c_07_target_kinerja=$data_f->c_07_target_kinerja;
+						$c_08_target_kinerja=$data_f->c_08_target_kinerja;
+						$c_09_target_kinerja=$data_f->c_09_target_kinerja;
+						$c_10_target_kinerja=$data_f->c_10_target_kinerja;
+						$c_11_target_kinerja=$data_f->c_11_target_kinerja;
+						$c_12_target_kinerja=$data_f->c_12_target_kinerja; 
+
 
 						$class_xeditable='';
 				        if ($this->session->userdata('ID_DIREKTORAT')==$data_f->dari){
@@ -4440,128 +5055,264 @@ class capaian_renja_model extends CI_Model{
 
 				        	
 
-		        	$table.="<td class='triwulan_1 '  style='vertical-align:middle;font-size:10px;".$this_month_01."'>";
-	        		$table.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_01."'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(1,1,1,".$data_f->id.",0)'>
-			        	<center>".strtoupper(trim(number_format($c_01)))."</center></a>";
-		        	$table.="</td>";
-		        	
-		        	$table.="<td class='triwulan_1 '  style='vertical-align:middle;font-size:10px;".$this_month_02."'>";
-	        		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(2,1,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_02)))."</center></a>";
-		        	$table.="</td>";
+				    $table.="<td class='triwulan_1 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_01."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_01_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_01."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(1,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_01)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
+ 
+		        	$table.="<td class='triwulan_1 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_02."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_02_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_02."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(2,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_02)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
+ 
+		        	$table.="<td class='triwulan_1 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_03."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_03_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_03."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(3,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_03)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
+		         
 
-
-		        	$table.="<td class='triwulan_1 '  style='vertical-align:middle;font-size:10px;".$this_month_03."'>";
-	        		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(3,1,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_03)))."</center></a>";
-		        	$table.="</td>";
-
-		        	/*$table.="<td class='triwulan_1'  style='vertical-align:middle;font-size:10px;'>
-		        	<center><b>".$rp_triwulan_1."</b></center></td>";
 		        	$table.="<td class='triwulan_1'  style='vertical-align:middle;font-size:10px;'>
+		        	<center><b>".$rp_triwulan_1."</b></center></td>";
+		        	/*$table.="<td class='triwulan_1'  style='vertical-align:middle;font-size:10px;'>
 		        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_1,1)."</b></center></td>";*/
 
+					
+		        	$table.="<td class='triwulan_2 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_04."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_04_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_04."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(4,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_04)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
 
-		        	$table.="<td class='triwulan_2 '  style='vertical-align:middle;font-size:10px;".$this_month_04."'>";
-	        		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(4,1,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_04)))."</center></a>";
-		        	$table.="</td>";
-
-
-
-		        	$table.="<td class='triwulan_2 ' style='vertical-align:middle;font-size:10px;".$this_month_05."'>";
-	       			$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(5,1,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_05)))."</center></a>";
-		        	$table.="</td>";
+					$table.="<td class='triwulan_2 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_05."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_05_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_05."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(5,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_05)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
+				
+		         	$table.="<td class='triwulan_2 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_06."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_06_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_06."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(6,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_06)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
  
-		        	$table.="<td class='triwulan_2 ' style='vertical-align:middle;font-size:10px;".$this_month_06."'>";
-	        		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(6,1,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_06)))."</center></a>";
-		        	$table.="</td>";
+		         
 
-		        	/*$table.="<td class='triwulan_2' style='vertical-align:middle;font-size:10px;'>
-		        	<center><b>".$rp_triwulan_2."</b></center></td>"; 
 		        	$table.="<td class='triwulan_2' style='vertical-align:middle;font-size:10px;'>
+		        	<center><b>".$rp_triwulan_2."</b></center></td>"; 
+		        	/*$table.="<td class='triwulan_2' style='vertical-align:middle;font-size:10px;'>
 		        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_2,1)."</b></center></td>";*/
 
-		        	$table.="<td class='triwulan_3 ' style='vertical-align:middle;font-size:10px;".$this_month_07."'>";
-	        		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(7,1,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_07)))."</center></a>";
-		        	$table.="</td>";
+		        	 
+
+		        	$table.="<td class='triwulan_3 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_07."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_07_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_07."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(7,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_07)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
+ 
+					$table.="<td class='triwulan_3 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_08."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_08_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_08."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(8,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_08)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
+ 	
+ 					$table.="<td class='triwulan_3 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_09."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_09_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_09."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(9,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_09)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
 
 
-		        	$table.="<td class='triwulan_3 ' style='vertical-align:middle;font-size:10px;".$this_month_08."'>";
-	     		   	$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(8,1,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_08)))."</center></a>";
-		        	$table.="</td>";
+		        	 
 
-
-		        	$table.="<td class='triwulan_3 ' style='vertical-align:middle;font-size:10px;".$this_month_09."'>";
-	        		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(9,1,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_09)))."</center></a>";
-		        	$table.="</td>";
-
-		        	/*$table.="<td class='triwulan_3' style='vertical-align:middle;font-size:10px;'>
-		        	<center><b>".$rp_triwulan_3."</b></center></td>"; 
 		        	$table.="<td class='triwulan_3' style='vertical-align:middle;font-size:10px;'>
+		        	<center><b>".$rp_triwulan_3."</b></center></td>"; 
+		        	/*$table.="<td class='triwulan_3' style='vertical-align:middle;font-size:10px;'>
 		        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_3,1)."</b></center></td>";*/
 
-		        	$table.="<td class='triwulan_4 ' style='vertical-align:middle;font-size:10px;".$this_month_10."'>";
-	        		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(10,1,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_10)))."</center></a>";
-		        	$table.="</td>";
+		        	$table.="<td class='triwulan_4 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_10."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_10_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_10."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(10,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_10)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
+
+		      		$table.="<td class='triwulan_4 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_11."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_11_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_11."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(11,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_11)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
 
 
-		        	$table.="<td class='triwulan_4 ' style='vertical-align:middle;font-size:10px;".$this_month_11."'>";
-	        		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(11,0,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_11)))."</center></a>";
-		        	$table.="</td>";
+		        	 $table.="<td class='triwulan_4 ' 
+			        	style='padding:0px;width:30px !important;vertical-align:middle;font-size:10px;".$this_month_12."'>";
+			        	$table.="<table style='width:100% ;min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;width: 35px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_12_target_kinerja))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;'>";
+					        		$table.="<center><a style='padding: 2px;width: 35px;border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_12."'  
+							        	class='".$class_xeditable." btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' onclick='return save_bulan(12,1,1,".$data_f->id.",0)'>
+							        	".strtoupper(trim(number_format($c_12)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+					$table.="</table>";  	
+					$table.="</td>";
 
-
-		        	$table.="<td class='triwulan_4 ' style='vertical-align:middle;font-size:10px;".$this_month_12."'>";
-	        		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-		        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-		        	data-placement='right' data-id='".$tipe_capaian."' 
-		        	data-title='Masukan Nilai Baru' onclick='return save_bulan(12,1,1,".$data_f->id.",0)'>
-		        	<center>".strtoupper(trim(number_format($c_12)))."</center></a>";
-		        	$table.="</td>";
+ 
 		        	
-		        	/*$table.="<td class='triwulan_4'  style='vertical-align:middle;font-size:10px;'>
+		        	$table.="<td class='triwulan_4'  style='vertical-align:middle;font-size:10px;'>
 		        	<center><b>".$rp_triwulan_4."</b></center></td>"; 
-		        	$table.="<td class='triwulan_4' style='vertical-align:middle;font-size:10px;'>
+		        	/*$table.="<td class='triwulan_4' style='vertical-align:middle;font-size:10px;'>
 		        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_4,1)."</b></center></td>";*/
 
 		        	 
@@ -4574,7 +5325,9 @@ class capaian_renja_model extends CI_Model{
 			        } else {
 			        	$percentange=($c_01+$c_02+$c_03+$c_04+$c_05+$c_06+$c_07+$c_08+$c_09+$c_10+$c_11+$c_12)/12;
 			        }	
-		       	   $table.="<td style='".$style.";vertical-align:middle;'>".number_format($percentange,1)."</td>"; 
+			       $total_kesamping=$c_01+$c_02+$c_03+$c_04+$c_05+$c_06+$c_07+$c_08+$c_09+$c_10+$c_11+$c_12;
+		       	   $table.="<td style='".$style.";vertical-align:middle;'><center>".number_format($total_kesamping)."</center></td>"; 
+		       	   $table.="<td style='".$style.";vertical-align:middle;'><center>".number_format($percentange,1)."</center></td>"; 
 
 
 		        /* AMBIL CAPAIAN KEUANGAN */
@@ -4606,134 +5359,304 @@ class capaian_renja_model extends CI_Model{
 			$c_11=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'11',$data_f->tahun_anggaran,'realisasi',$id);
 			$c_12=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'12',$data_f->tahun_anggaran,'realisasi',$id); 
 
+			$c_01_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'01',$data_f->tahun_anggaran,'target',$id);
+			$c_02_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'02',$data_f->tahun_anggaran,'target',$id);
+			$c_03_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'03',$data_f->tahun_anggaran,'target',$id);
+			$c_04_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'04',$data_f->tahun_anggaran,'target',$id);
+			$c_05_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'05',$data_f->tahun_anggaran,'target',$id);
+			$c_06_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'06',$data_f->tahun_anggaran,'target',$id);
+			$c_07_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'07',$data_f->tahun_anggaran,'target',$id);
+			$c_08_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'08',$data_f->tahun_anggaran,'target',$id);
+			$c_09_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'09',$data_f->tahun_anggaran,'target',$id);
+			$c_10_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'10',$data_f->tahun_anggaran,'target',$id);
+			$c_11_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'11',$data_f->tahun_anggaran,'target',$id);
+			$c_12_keuangan_target=$this->get_total_header_capaian_realisasi($id_table,$data_f->kode_direktorat_child,'12',$data_f->tahun_anggaran,'target',$id); 
+
 			$rp_triwulan_1=$c_01+$c_02+$c_03;
 	        $rp_triwulan_2=$c_04+$c_05+$c_06;
 	        $rp_triwulan_3=$c_07+$c_08+$c_09;
 	        $rp_triwulan_4=$c_10+$c_11+$c_12;
+	        $kali_seratus=100;
 
-        	$table.="<td class='triwulan_1 '  style='vertical-align:middle;font-size:10px;".$this_month_01."'>";
-    		$table.="<a style='font-size:10px;text-align:center;cursor:pointer".$color_01."'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(1,1,1,".$data_f->id.",1)'>
-	        	<center>".strtoupper(trim(number_format($c_01)))."</center></a>";
-        	$table.="</td>";
-        	
-        	$table.="<td class='triwulan_1 '  style='vertical-align:middle;font-size:10px;".$this_month_02."'>";
-    		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(2,1,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_02)))."</center></a>";
-        	$table.="</td>";
+     		$rp_triwulan_1_target=$c_01_keuangan_target+$c_02_keuangan_target+$c_03_keuangan_target;
+	        $rp_triwulan_2_target=$c_04_keuangan_target+$c_05_keuangan_target+$c_06_keuangan_target;
+	        $rp_triwulan_3_target=$c_07_keuangan_target+$c_08_keuangan_target+$c_09_keuangan_target;
+	        $rp_triwulan_4_target=$c_10_keuangan_target+$c_11_keuangan_target+$c_12_keuangan_target;
+			if($rp_triwulan_1_target=="0") {$rp_triwulan_1_target="1";}
+			if($rp_triwulan_2_target=="0") {$rp_triwulan_2_target="1";}
+			if($rp_triwulan_3_target=="0") {$rp_triwulan_3_target="1";}
+			if($rp_triwulan_4_target=="0") {$rp_triwulan_4_target="1";}
+			$persen_triwulan_1=(($rp_triwulan_1) / $rp_triwulan_1_target) * $kali_seratus;
+			$persen_triwulan_2=(($rp_triwulan_2) / $rp_triwulan_2_target) * $kali_seratus;
+			$persen_triwulan_3=(($rp_triwulan_3) / $rp_triwulan_3_target) * $kali_seratus;
+			$persen_triwulan_4=(($rp_triwulan_4) / $rp_triwulan_4_target) * $kali_seratus;
+
+	        $table.="<td class='triwulan_1 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_01."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_01_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_01."'  
+							        	class=' btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_01)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
+
+        	 
+        	 $table.="<td class='triwulan_1 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_02."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_02_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_02."'  
+							        	class=' btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_02)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
 
 
-        	$table.="<td class='triwulan_1 '  style='vertical-align:middle;font-size:10px;".$this_month_03."'>";
-    		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(3,1,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_03)))."</center></a>";
-        	$table.="</td>";
+        	 $table.="<td class='triwulan_1 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_03."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_03_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_03."'  
+							        	class=' btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_03)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
+
+
 
         	$table.="<td class='triwulan_1 '  style='vertical-align:middle;font-size:10px;'>
         	<center><b>".number_format($rp_triwulan_1,1)."</b></center></td>";
         	$table.="<td class='triwulan_1 '  style='vertical-align:middle;font-size:10px;'>
-        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_1,1)."</b></center></td>";
+        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_1,1)." % </b></center></td>";
 
 
-        	$table.="<td class='triwulan_2 '  style='vertical-align:middle;font-size:10px;".$this_month_04."'>";
-    		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(4,1,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_04)))."</center></a>";
-        	$table.="</td>";
+        	 $table.="<td class='triwulan_2 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_04."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_04_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_04."'  
+							        	class=' btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_04)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
+
+        	 
 
 
 
-        	$table.="<td class='triwulan_2 ' style='vertical-align:middle;font-size:10px;".$this_month_05."'>";
-   			$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(5,1,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_05)))."</center></a>";
-        	$table.="</td>";
+        	$table.="<td class='triwulan_2 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_05."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_05_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_05."'  
+							        	class=' btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_05)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
 
-        	$table.="<td class='triwulan_2 ' style='vertical-align:middle;font-size:10px;".$this_month_06."'>";
-    		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(6,1,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_06)))."</center></a>";
-        	$table.="</td>";
+        	$table.="<td class='triwulan_2 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_06."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_06_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_06."'  
+							        	class=' btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_06)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
 
         	$table.="<td class='triwulan_2 ' style='vertical-align:middle;font-size:10px;'>
         	<center><b>".number_format($rp_triwulan_2,1)."</b></center></td>";
         	$table.="<td class='triwulan_2 ' style='vertical-align:middle;font-size:10px;'>
-        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_2,1)."</b></center></td>";
-
-        	$table.="<td class='triwulan_3 ' style='vertical-align:middle;font-size:10px;".$this_month_07."'>";
-    		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(7,1,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_07)))."</center></a>";
-        	$table.="</td>";
+        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_2,1)."  %  </b></center></td>";
 
 
-        	$table.="<td class='triwulan_3 ' style='vertical-align:middle;font-size:10px;".$this_month_08."'>";
- 		   	$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(8,1,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_08)))."</center></a>";
-        	$table.="</td>";
 
 
-        	$table.="<td class='triwulan_3 ' style='vertical-align:middle;font-size:10px;".$this_month_09."'>";
-    		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(9,1,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_09)))."</center></a>";
-        	$table.="</td>";
+        	$table.="<td class='triwulan_3 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_07."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_07_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_07."'  
+							        	class=' btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_07)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
+
+
+        	$table.="<td class='triwulan_3 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_08."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_08_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_08."'  
+							        	class='  btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_08)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
+
+
+        	$table.="<td class='triwulan_3 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_09."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_09_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_09."'  
+							        	class=' btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_09)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
 
         	$table.="<td class='triwulan_3 ' style='vertical-align:middle;font-size:10px;'>
         	<center><b>".number_format($rp_triwulan_3,1)."</b></center></td>";
         	$table.="<td class='triwulan_3 ' style='vertical-align:middle;font-size:10px;'>
-        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_3,1)."</b></center></td>";
-
-        	$table.="<td class='triwulan_4 ' style='vertical-align:middle;font-size:10px;".$this_month_10."'>";
-    		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(10,1,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_10)))."</center></a>";
-        	$table.="</td>";
+        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_3,1)."  %  </b></center></td>";
 
 
-        	$table.="<td class='triwulan_4 ' style='vertical-align:middle;font-size:10px;".$this_month_11."'>";
-    		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(11,0,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_11)))."</center></a>";
-        	$table.="</td>";
+        	$table.="<td class='triwulan_4 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_10."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_10_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_10."'  
+							        	class='  btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_10)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
+
+         	$table.="<td class='triwulan_4 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_11."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_11_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_11."'  
+							        	class='  btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_11)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
 
 
-        	$table.="<td class='triwulan_4 ' style='vertical-align:middle;font-size:10px;".$this_month_12."'>";
-    		$table.="<a  style='font-size:10px;text-align:center;cursor:pointer'  
-        	class='".$class_xeditable."' id='".$data_f->id."' data-type='text' 
-        	data-placement='right' data-id='".$tipe_capaian."' 
-        	data-title='Masukan Nilai Baru' onclick='return save_bulan(12,1,1,".$data_f->id.",1)'>
-        	<center>".strtoupper(trim(number_format($c_12)))."</center></a>";
-        	$table.="</td>";
+			$table.="<td class='triwulan_4 ' 
+			        	style='padding:0px; vertical-align:middle;font-size:10px;".$this_month_12."'>";
+			        	$table.="<table style='width:100% ;    min-height: 120px;'>";
+				        	$table.="<tr>";
+					        	$table.="<td style='background-color:#5DADE2; min-width: 80px !important;'>";
+					        		$table.="<center><a class='btn btn btn-block btn-sm' style='padding: 2px;float:left;margin:0px;color:#fff;font-size:10px;text-align:center;cursor:pointer'>
+				        				<b>(".strtoupper(trim(number_format($c_12_keuangan_target))).")</b></a></center>";
+					        	$table.="</td>";
+					        	$table.="<td style='border-left:1px solid #dedede;background-color: #A9DFBF;    min-width: 80px !important;'>";
+					        		$table.="<center><a style='padding: 2px; border-radius:0px;float:left;margin:0px;background-color:#A9DFBF;font-size:10px;text-align:center;cursor:pointer".$color_11."'  
+							        	class=' btn btn-block btn-sm' id='".$data_f->id."' data-type='text' 
+							        	data-placement='right' data-id='".$tipe_capaian."' 
+							        	data-title='Masukan Nilai Baru' >
+							        	".strtoupper(trim(number_format($c_12)))."</a></center>";
+					        	$table.="</td>";
+					        	$table.="</tr>";
+			$table.="</table>";  	
+			$table.="</td>";
+
+
+        	 
         	
         	$table.="<td class='triwulan_4 '  style='vertical-align:middle;font-size:10px;'>
         	<center><b>".number_format($rp_triwulan_4,1)."</b></center></td>";
         	$table.="<td class='triwulan_4 ' style='vertical-align:middle;font-size:10px;'>
-        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_4,1)."</b></center></td>";
+        	<center><b><span style='color:#F0F0F0'>'</span>".number_format($persen_triwulan_4,1)."  % </b></center></td>";
 
         	$total_kesamping=0;
 			if($id_table=="1"){
@@ -4765,9 +5688,25 @@ class capaian_renja_model extends CI_Model{
 	        if(($target_keuangan=="0") or ($target_keuangan=="")  or (trim($target_keuangan)=="-") ){
 	        	$target_keuangan="1";
  	        }
-	        $percentange=(($c_01+$c_02+$c_03+$c_04+$c_05+$c_06+$c_07+$c_08+$c_09+$c_10+$c_11+$c_12)/$target_keuangan)*100;
+	    $percentange=(($c_01+$c_02+$c_03+$c_04+$c_05+$c_06+$c_07+$c_08+$c_09+$c_10+$c_11+$c_12)/$target_keuangan)*100;
+	   
+	    $sisa_pagu=$total_kesamping-$total_all_pagu;	   
+	    $sisa_target=$total_kesamping-$total_target;	   
+	    if($sisa_pagu=="0"){
+    		$color1=" ; background-color:#36D195 ; ";
+    	} else {
+    		$color1=" ; background-color:#E74C3C ; ";
+    	}
+    	if($sisa_target=="0"){
+    		$color2=" ; background-color:#36D195 ; ";
+    	} else {
+    		$color2=" ; background-color:#E74C3C ; ";
+    	}
 
-       	 $table.="<td  class='' style='".$style.";vertical-align:middle;'><center>".number_format($percentange,1)." % </center>  </td>"; 
+       	$table.="<td  class='' style='".$style.";vertical-align:middle;'><center>".number_format($percentange,1)." % </center>  </td>"; 
+       	
+       	$table.="<td style='vertical-align:middle;font-size:10px;'><center style='".$color2."'  class='badge' >Rp. ".number_format($sisa_target)."</center>  </td>"; 
+       	$table.="<td style='vertical-align:middle;font-size:10px;'><center style='".$color1."'  class='badge' >Rp. ".number_format($sisa_pagu)."</center>  </td>"; 
 	        $table.="</tr>";	        	
 	        	if ($this->cek_child($id,$data_f->parent)) {
 					$table.=$this->get_child_realisasi_capaian($id,$id_table,$data_f->parent,$komparasi);

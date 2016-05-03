@@ -109,14 +109,33 @@
     }
     function load_capaian_all(table,id){
     	$("#data_capaian_target_"+table).mask('Loading.....');
+    	var data_target_keuangan=0;
+    	var data_target_keuangan_realisasi=0;
+    	var persentase_realisasi_keuangan=0;
     	$.ajax({
 			url:'<?php echo base_url(); ?>capaian/load_capaian_all/'+<?php echo $id;?>+"/"+id,		 
 			type:'POST',
 			data:"id="+id,
 			success:function(data){ 
 				  $("#data_capaian_all").unmask();
-			 	  $("#data_capaian_all").html(data);				 	  
-			 }
+			 	  $("#data_capaian_all").html(data);
+			 	  $( ".view_target_keuangan_target" ).each(function( index ) {		
+						 	data_target_keuangan=parseInt(data_target_keuangan) + parseInt($(this).text().replace(/,/g, '') );
+				  });	
+				  $( ".view_target_keuangan_realisasi" ).each(function( index ) {		
+						 	data_target_keuangan_realisasi=parseInt(data_target_keuangan_realisasi) + parseInt($(this).text().replace(/,/g, '') );
+				  });		
+				  persentase_realisasi_keuangan=(data_target_keuangan_realisasi/data_target_keuangan)*100;
+				  $("#total_target_capaian").html("<center>"+formatDollar(data_target_keuangan)+"</center>");	
+				  $("#total_realisasi_capaian").html("<center>"+formatDollar(data_target_keuangan_realisasi)+"</center>");
+				  $("#persentase_realisasi_keuangan").html("<center>"+formatDollar(parseInt(persentase_realisasi_keuangan))+"</center>");				 	
+				  if(formatDollar(parseInt(persentase_realisasi_keuangan)) < 100 ){
+				  		 $("#persentase_realisasi_keuangan").html("<center class='badge' style='background:#B50000'>"+formatDollar(parseInt(persentase_realisasi_keuangan))+" % </center>");		
+				  }  else {
+
+				   	  $("#persentase_realisasi_keuangan").html("<center class='badge' style='background:#31BC86'>"+formatDollar(parseInt(persentase_realisasi_keuangan))+" % </center>");
+				 }
+			}
 		});	
     }
     function load_capaian_target(table,id){
@@ -382,9 +401,15 @@
   		var value_kinerja=(value*3);
   		var value_keuangan=(value*5);
 
- 		$(".td_capaian_kinerja").attr('colspan',value_kinerja);
- 		$(".td_capaian_keuangan").attr('colspan',value_keuangan);
+ 		$("#table_renja_target .td_capaian_kinerja").attr('colspan',value_kinerja);
+ 		$("#table_renja_target .td_capaian_keuangan").attr('colspan',value_keuangan);
  		
+ 		var value_kinerja=(value*4);
+  		var value_keuangan=(value*5);
+
+ 		$("#table_renja_realisasi .td_capaian_kinerja").attr('colspan',value_kinerja);
+ 		$("#table_renja_realisasi .td_capaian_keuangan").attr('colspan',value_keuangan);
+
  		$(".containernya").width(1200);
 		$("body").width(1200);
 	 	$(".containernya").width($(document).width()+200);
@@ -443,7 +468,7 @@
 	 			},
 				success:function(data){ 
 				    $("#data_renja_up").html(data);			  	 
- 					    $( ".is_indikator_bo01" ).each(function( index ) {		
+ 					  	  $( ".is_indikator_bo01" ).each(function( index ) {		
 						 	sum_bo_01=parseInt(sum_bo_01) + parseInt($(this).text().replace(/,/g, '') );
 						 });
 						 $( ".is_indikator_bo02" ).each(function( index ) {		
@@ -876,6 +901,15 @@
 	</table>
   </div> -->
   <div id="tabs-renja">
+  	<table style="width:50%">
+    	<tbody><tr>
+    		<td><div style="height:15px;width:15px;background-color:#2C802C;float:left"></div> &nbsp; Indikator</td>    	 
+    		<td><div style="height:15px;;width:15px;background-color:#31BC86;float:left"></div> &nbsp;  Komponen Input</td>    	 
+    		<td><div style="height:15px;width:15px;background-color:#BED446;float:left"></div> &nbsp;  Sub Komponen Input</td>
+    		 
+    	</tr>
+
+    </tbody></table>
   		<table id="table_renja" class="table_renja table multimedia table-striped table-hover table-bordered" style="width:100%;">
     <thead >
     	<tr>
@@ -913,7 +947,9 @@
   </div>
   <div id="tabs-kinerja">
    	<?php cetak_toogle($direktorat);?>
+   
 	<div id="tabs_realisasi_capaian_kinerja">
+
 		  <ul>
 		    <li><a href="#tabs_1_target_kinerja"    onclick="set_mask('tabs_1_target_kinerja');load_data_chart(0)">
 		    <i class="glyphicon glyphicon-fullscreen"></i> Target & Realisasi (View)</a></li>
@@ -989,24 +1025,34 @@
 	    </div>
 		<div id="tabs_2_relisasi_kinerja" style="background-image: url(<?php echo base_url();?>/images/mask.png)  ; width: 100%;background-repeat: no-repeat;">
 				<?php  status_capaian($capaian_kinerja_realisasi); ?>
+				
 				<table style="width:15%;margin-bottom:5px;float:right">
  					<tr>
  						<td></td>
- 						<td><a class="btn btn-success  pull-right " style="border-radius:0px;color:#fff"
+ 						<td>
+ 						<!--<a class="btn btn-success  pull-right " style="border-radius:0px;color:#fff"
 	 						href="<?php echo base_url();?>capaian/export_excel_atu_atu_sob/<?php echo $id;?>/1/1"
  							style="color:#fff">
 							<img src="<?php echo base_url();?>images/iconexcel.png"> Export To Excel </a>
-							
+							-->
 						</td>
  					</tr>
  				</table>
- 				<br><br>
-  				<table style="margin-left:1px;overflow: scroll;">
+ 				 
+  				<table style="margin-left:1px;overflow: scroll;float:left">
  						<tr>
  							<td class="btn btn-primary btn-sm" style="border-radius:0px;padding:0px;text-align:left;width:500px">
  							 <i> <b>* Data Dalam Bentuk Persentase % Untuk Capaian Kinerja </b></i></td>
  						</tr>
  				</table>
+ 					<table style="width:20%;background-color: #fff;float:left">
+    	<tbody><tr>
+    		<td style="padding:5px"><div style="height:15px;width:15px;background-color:#5CABE0;float:left"></div> &nbsp; TARGET</td>    	 
+    		<td  style="padding:5px"><div style="height:15px;;width:15px;background-color:#A8DEBE;float:left"></div> &nbsp; REALISASI</td>    	 
+     		 
+    	</tr>
+
+    </tbody></table>
 			 	<?php $this->load->view('capaian/header_table_renja');?>
 				<tbody id="data_capaian_kinerja" style="overflow:scroll">
 				    	<td colspan="52">

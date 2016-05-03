@@ -9,22 +9,26 @@
    			font-size:15px;
    		}
    </style>
-   <table id="table_renja" class="table_renja table multimedia table-striped table-hover table-bordered" style="width:100%;">
+   <table id="table_renja_target" class="table_renja table multimedia table-striped table-hover table-bordered" style="width:100%;">
     <thead >
     		<tr>
       		<td   style="vertical-align:middle;font-size:10px;text-align:center;background-color:#31BC86;color:#fff;font-weight:bold" 
       		colspan="5"></td>     		 
-           <td rowspan="4" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold"  >PAGU</td>   
+           <td rowspan="4" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#31BC86;color:#fff;font-weight:bold"  >PAGU</td>   
    
 
 
       		<td  colspan="12" id="td_capaian_kinerja" class="td_kinerja td_capaian_kinerja" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#31BC86;color:#fff;font-weight:bold" >CAPAIAN KINERJA</td>
       		 
-      		<td rowspan=4  style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold"><b>%</b></td>
+      		<td rowspan=4  style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold"><b>TOTAP TARGET CAPAIAN KINERJA TAHUN BERJALAN <br>%</b></td>
       		<td  colspan="20" id="td_capaian_keuangan"  class="td_keuangan td_capaian_keuangan"  style="vertical-align:middle;font-size:10px;text-align:center;background-color:#31BC86;color:#fff;font-weight:bold" >CAPAIAN KEUANGAN</td>
 
-      		<td  rowspan=4 class="td_keuangan" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold"><b>PROGRESS RP TERHADAP PAGU RENJA</b></td>
-      		<td rowspan=4 class="td_keuangan" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold"><b>PROGRESS % TERHADAP PAGU RENJA</b></td>
+      		<td  rowspan=4 class="td_keuangan" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold"><b>TOTAL "TARGET" CAPAIAN KEUANGAN</b></td>
+      		<td rowspan=4 class="td_keuangan" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold">
+          <b>PERSENTASE "TARGET" CAPAIAN KEUANGAN % TERHADAP PAGU RENJA</b></td>
+
+          <td rowspan=4 class="td_keuangan" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold">
+          <b>SISA "TARGET" CAPAIAN KEUANGAN TERHADAP "PAGU"</b></td>
        	</tr>
 
       	<tr>
@@ -73,7 +77,7 @@
   	        
  			
 
- 			<td class="triwulan_1 header_table td_keuangan"><br>1</td>
+ 		     	<td class="triwulan_1 header_table td_keuangan"><br>1</td>
  	        <td class="triwulan_1 header_table td_keuangan td_keuangan"><br>2</td>
  	        <td class="triwulan_1 header_table td_keuangan"><br>3</td> 	        
  	        <td class="triwulan_1 header_table td_keuangan"><br>RP</td>

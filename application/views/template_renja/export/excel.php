@@ -27,7 +27,11 @@ header("Expires: 0");
     	<tr>
             <td  style="vertical-align:middle;font-size:15px;text-align:center;background-color:#7F7F7F;color:#000;font-weight:bold" rowspan = 4>KODE</td>
           
+<<<<<<< HEAD
             <td style="vertical-align:middle;font-size:15px;text-align:center;background-color:#7F7F7F;color:#000;font-weight:bold;font-weight:bold" rowspan = 4 colspan = <?php echo isset($colspan) ? $colspan : "3";?> >PROGRAM / <br> KEGIATAN / INDIKATOR /  <br> KOMPONEN INPUT</td>
+=======
+            <td style="vertical-align:middle;font-size:15px;text-align:center;background-color:#7F7F7F;color:#000;font-weight:bold;font-weight:bold" rowspan = 4 colspan = 3>PROGRAM / <br> KEGIATAN / INDIKATOR /  <br> KOMPONEN INPUT</td>
+>>>>>>> 179225fbc5444499cd057a7803641f56589fe469
             <td style="vertical-align:middle;font-size:15px;text-align:center;background-color:#7F7F7F;color:#000;font-weight:bold" rowspan = "4" >SASARAN PROGRAM  <br>(OUTCOME)  <br> / SASARAN KEGIATAN  <br>(OUTPUT)</td>
             <td style="vertical-align:middle;font-size:15px;text-align:center;background-color:#7F7F7F;color:#000;font-weight:bold" rowspan = 4>TARGET</td> 
             <td style="vertical-align:middle;font-size:15px;text-align:center;background-color:#7F7F7F;color:#000;font-weight:bold" colspan = 8>RENCANA PAGU TAHUN 2016 (Rp. X 1000)</td>  
@@ -59,7 +63,11 @@ header("Expires: 0");
      <tbody>
 			<tr>
 				<td>06</td>
+<<<<<<< HEAD
 				<td style="font-size:12px" colspan='<?php echo isset($colspan) ? $colspan : "3";?>'>PROGRAM BINA PEMBANGUNAN DAERAH</td>
+=======
+				<td style="font-size:12px" colspan='3'>PROGRAM BINA PEMBANGUNAN DAERAH</td>
+>>>>>>> 179225fbc5444499cd057a7803641f56589fe469
 				<td> </td>
 				<td> </td>
 				<td id="f_sum_bo_01"><?php echo isset($t_sum_bo_01)  ? number_format($t_sum_bo_01) : "0"; ?></td>
@@ -70,7 +78,11 @@ header("Expires: 0");
 				<td id="f_sum_bno_rm_d"><?php echo isset($t_sum_bno_phln_d)  ? number_format($t_sum_bno_phln_d) : "0"; ?></td>
 				<td id="f_sum_pnbp"><?php echo isset($t_sum_bno_pnbp)  ? number_format($t_sum_bno_pnbp) : "0"; ?></td>
 				<td id="f_sum_pagu"><right><?php echo isset($t_sum_pagu)  ? number_format($t_sum_pagu) : "0"; ?></right></td>
+<<<<<<< HEAD
 				<td   > </td>
+=======
+				<td> </td>
+>>>>>>> 179225fbc5444499cd057a7803641f56589fe469
 				</tr>
 			<tr>
 				<td></td>
@@ -82,7 +94,11 @@ header("Expires: 0");
 				><td></td><td></td><td>
 					
 				</td><td></td>
+<<<<<<< HEAD
 				<<td  colspan='<?php echo isset($colspan2) ? $colspan2 : "1";?>'> </td>
+=======
+				<td> </td>
+>>>>>>> 179225fbc5444499cd057a7803641f56589fe469
 				</tr><tr><td></td>
 				<td></td>
 				<td  style='vertical-align:middle;font-size:10px;text-align:center'>1</td>
@@ -91,7 +107,11 @@ header("Expires: 0");
 				<td></td><td></td><td></td>
 				<td></td>
 				<td></td><td></td><td></td>
+<<<<<<< HEAD
 				<td  colspan='<?php echo isset($colspan2) ? $colspan2 : "1";?>'> </td>
+=======
+				<td></td>
+>>>>>>> 179225fbc5444499cd057a7803641f56589fe469
 				<td></td>
 				</tr><tr><td></td>
 				<td></td><td  style='vertical-align:middle;font-size:10px;text-align:center'>2</td><td style="font-size:12px">Persentase / 
@@ -100,7 +120,11 @@ header("Expires: 0");
 	       	<td></td><td></td>
 	       	<td></td><td></td>
 	       	<td></td><td></td>
+<<<<<<< HEAD
 	       	<td></td><td  colspan='<?php echo isset($colspan2) ? $colspan2 : "1";?>'> </td></tr>
+=======
+	       	<td></td><td></td></tr>
+>>>>>>> 179225fbc5444499cd057a7803641f56589fe469
 	       	<tr><td></td><td></td>
 	       	<td  style='vertical-align:middle;font-size:10px;text-align:center'>3</td><td style="font-size:12px">Persentase penyelesaian perselisihan antar susunan tingkat 
 	       	pemerintahan terkait dengan urusan pemerintahan</td><td></td>
@@ -108,7 +132,11 @@ header("Expires: 0");
 	       	<td></td><td></td>
 	       	<td></td><td></td>
 	       	<td></td><td></td>
+<<<<<<< HEAD
 	       	<td></td><td  colspan='<?php echo isset($colspan2) ? $colspan2 : "1";?>'> </td>
+=======
+	       	<td></td><td></td>
+>>>>>>> 179225fbc5444499cd057a7803641f56589fe469
 	       	</tr><tr><td></td>
 	       	<td></td>
 	       	<td  style='vertical-align:middle;font-size:10px;text-align:center'>4</td>
@@ -123,7 +151,11 @@ header("Expires: 0");
 	       	<td></td>
 	       	<td></td>
 	       	<td></td>
+<<<<<<< HEAD
 	       	<td  colspan='<?php echo isset($colspan2) ? $colspan2 : "1";?>'> </td>
+=======
+	       	<td></td>
+>>>>>>> 179225fbc5444499cd057a7803641f56589fe469
 	       	</tr><tr><td></td>
 	       	<td></td>
 	       	<td  style='vertical-align:middle;font-size:10px;text-align:center'>5</td>
@@ -132,7 +164,11 @@ header("Expires: 0");
 	       	<td></td><td></td>
 	       	<td></td><td></td>
 	       	<td></td><td></td>
+<<<<<<< HEAD
 	       	<td  colspan='<?php echo isset($colspan2) ? $colspan2 : "1";?>'> </td></tr>
+=======
+	       	<td></td></tr>
+>>>>>>> 179225fbc5444499cd057a7803641f56589fe469
 	       	</tr>
 	 
     </tbody>
