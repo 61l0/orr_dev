@@ -1836,6 +1836,8 @@ class capaian_renja_model extends CI_Model{
 				        		$bg2="background:#B50000";
 				        	} else if($target_kinerja2 < $total_kesamping_kinerja){
 				        		$bg2="background:#31BC86";
+				        	} else  {
+				        		$bg2="background:#31BC86";
 				        	} 
 
 				        	$table_append.="<td class='triwulan_1' style='vertical-align:middle;font-size:10px;".$bg_ikk."'>";
