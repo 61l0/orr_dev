@@ -737,7 +737,7 @@ class capaian_renja_model extends CI_Model{
  		$jumlah_semua=$cek_if_lebih_seratus-$total_sebelumnya+$jumlah;
  		$cek_total_target_per_row=$this->cek_total_target_per_row($kode_direktorat_child,$kode,$parent,'capaian_kinerja_target',$tahun_anggaran);
    		if ($jumlah_semua > $cek_total_target_per_row ){
- 			echo "Realisasi Tidak Boleh Melebihi Target Capaian Kinerja ...";
+ 			echo "Realisasi Tidak Boleh Melebihi Target Capaian Kinerja / <i><b>Target Capaian Belum Diisi</b></i>...";
  			return false;
  		}
  		
