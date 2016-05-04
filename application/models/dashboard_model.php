@@ -449,6 +449,68 @@ class dashboard_model extends CI_Model{
 		$table.="</table>";
 		echo $table;
 	}
+	 
+	function get_total_kegiatan_prioritas($field="",$kode_direktorat_child="",$tahun_anggaran=""){
+		$jumlah=0;
+		$field=strtolower($field);
+	 	$query=$this->db->query("select count(1) as jumlah from data_template_renja  a			 
+			where trim(a.kode_direktorat_child)='".trim($kode_direktorat_child)."'	
+			and (a.kode_direktorat='' or a.kode_direktorat IS NULL)
+		 	and tipe='indikator'	
+ 			and trim(a.tahun_berlaku)='".trim($tahun_anggaran)."'  and kode!='' and kl='".$field."'"); 
+  	 		if ($query->num_rows() > 0) {
+				foreach ($query->result() as $data) {					 
+					$jumlah=$data->jumlah; 					 
+			}
+			return $jumlah;
+		}	 
+ 	}
+
+	function kegiatan_prioritas($id=""){
+		$datenow=date("Y");
+		$table="<table class='table multimedia table-striped table-hover table-bordered'>";
+	 	$table.="<thead>";
+	 	$table.="<tr>";
+				$table.="<th></th>";
+				$table.="<th>KL </th>";
+ 				$table.="<th>AP (QW)</th>";
+ 				$table.="<th>AP (PL)</th>";
+ 		$table.="</tr>";	
+	 	$table.="</thead>";
+	 	$table.="<tbody>";
+	 	$query=$this->db->query("select *  from m_unit_kerja a
+ 	 	  order by a.kd_unit_kerja asc");
+	 	$total_kl=0;
+	 	$total_qw=0;
+	 	$total_pl=0;
+	 	if ($query->num_rows() > 0) {
+			foreach ($query->result() as $data) {
+					$total_all_samping=0;
+	 	
+					$KL=$this->get_total_kegiatan_prioritas('KL',$data->kd_unit_kerja,$datenow);
+					$QW=$this->get_total_kegiatan_prioritas('QW',$data->kd_unit_kerja,$datenow);
+					$PL=$this->get_total_kegiatan_prioritas('PL',$data->kd_unit_kerja,$datenow);
+					$total_kl=$total_kl+$KL;
+					$total_qw=$total_qw+$QW;
+					$total_pl=$total_pl+$PL;
+ 					$table.="<tr>";
+							$table.="<td><b>" . $data->nama_unit_kerja. "</b></td>";
+							$table.="<td style='vertical-align:middle'><center>" . number_format(($KL)). "</center></td>";
+							$table.="<td style='vertical-align:middle'><center>" . number_format(($QW)). "</center></td>";
+							$table.="<td style='vertical-align:middle'><center>" . number_format(($PL)). "</center></td>";
+ 					$table.="</tr>";					 
+			}
+		}
+		$table.="<tr>";
+				$table.="<th>TOTAL</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'><center>".number_format($total_kl)."</center></th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'><center>".number_format($total_qw)."</center></th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'><center>".number_format($total_pl)."</center></th>";
+		$table.="</tr>";	
+	 	$table.="<tbody>";
+		$table.="</table>";
+		echo $table;
+	}
 	function belanja_non_operasional_list($id=""){
 		$series='';
 		$total_bo01_a='0';
@@ -500,8 +562,7 @@ class dashboard_model extends CI_Model{
 					$total_phln_p_a=$total_phln_p_a+$total_bno_phln_p;
 					$total_phln_d_a=$total_phln_d_a+$total_bno_phln_d;
 					$total_pnbp_a=$total_pnbp_a+$total_pnbp;
-					$total_pnbp_a=$total_pnbp_a+$total_pnbp;
-					$total_all=$total_all+$total_all_samping;
+ 					$total_all=$total_all+$total_all_samping;
  					$table.="<tr>";
 							$table.="<td><b>" . $data->nama_unit_kerja. "</b></td>";
 							$table.="<td style='vertical-align:middle'>" . number_format(($total_bo01)). "</td>";
@@ -511,7 +572,7 @@ class dashboard_model extends CI_Model{
 							$table.="<td style='vertical-align:middle'>" . number_format(($total_bno_phln_p)). "</td>";
 							$table.="<td style='vertical-align:middle'>" . number_format(($total_bno_phln_d)). "</td>";
 							$table.="<td style='vertical-align:middle'>" . number_format(($total_pnbp)). "</td>";
-							$table.="<td style='vertical-align:middle;font-weight:bold'><a style='color:#fff' class='btn-block btn-sm btn btn-danger'>" . number_format(($total_all_samping)). "</a></td>";
+							$table.="<td style='vertical-align:middle;padding:0px;background-color:#E74C3C'><a style='color:#fff' class='btn-block btn-sm btn btn-danger'>" . number_format(($total_all_samping)). "</a></td>";
 					$table.="</tr>";
 					 
 				 
@@ -519,14 +580,14 @@ class dashboard_model extends CI_Model{
 		}
 		$table.="<tr>";
 				$table.="<th>TOTAL</th>";
-				$table.="<th>".number_format($total_bo01_a)."</th>";
-				$table.="<th>".number_format($total_bo02_a)."</th>";
-				$table.="<th>".number_format($total_rm_p_a)."</th>";
-				$table.="<th>".number_format($total_rm_d_a)."</th>";
-				$table.="<th>".number_format($total_phln_p_a)."</th>";
-				$table.="<th>".number_format($total_phln_d_a)."</th>";
-				$table.="<th>".number_format($total_pnbp_a)."</th>";
-				$table.="<th>".number_format($total_all)."</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_bo01_a)."</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_bo02_a)."</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_rm_p_a)."</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_rm_d_a)."</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_phln_p_a)."</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_phln_d_a)."</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_pnbp_a)."</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_all)."</th>";
 		$table.="</tr>";	
 	 	$table.="<tbody>";
 		$table.="</table>";
@@ -548,11 +609,11 @@ class dashboard_model extends CI_Model{
 	 	$table.="<thead>";
 	 	$table.="<tr>";
 				$table.="<th></th>";
-				$table.="<th><center>BELANJA <br> OPERASIONAL</center></th>";
- 				$table.="<th><center>RUPIAH <br>  MURNI</center></th>";
-				$table.="<th>PHLN</th>";
-				$table.="<th>PNBP</th>";		 
-				$table.="<th>TOTAL</th>";
+				$table.="<th style='vertical-align:middle'><center>BELANJA <br> OPERASIONAL</center></th>";
+ 				$table.="<th  style='vertical-align:middle'><center>RUPIAH  MURNI <br> PUSAT + DAERAH </center></th>";
+				$table.="<th  style='vertical-align:middle'><center>PHLN <br>PUSAT + DAERAH</center> </th>";
+				$table.="<th  style='vertical-align:middle'><center>PNBP</center></th>";		 
+				$table.="<th  style='vertical-align:middle'><center>TOTAL</center></th>";
 		$table.="</tr>";	
 	 	$table.="</thead>";
 	 	$table.="<tbody>";
@@ -588,7 +649,7 @@ class dashboard_model extends CI_Model{
  							$table.="<td style='vertical-align:middle'>" . number_format(($total_bno_rm_p+$total_bno_rm_d)). "</td>";
  							$table.="<td style='vertical-align:middle'>" . number_format(($total_bno_phln_p+$total_bno_phln_d)). "</td>";
  							$table.="<td style='vertical-align:middle'>" . number_format(($total_pnbp)). "</td>";
-							$table.="<td style='vertical-align:middle'><a style='color:#fff' class='btn-block btn-sm btn btn-danger'>" . number_format(($total_all_samping)). "</a></td>";
+							$table.="<td style='vertical-align:middle;padding:0px;background-color:#E74C3C'><a style='padding-top:10px;color:#fff;border-radius:0px;height:40px;' class='btn-block btn-sm btn btn-danger'>" . number_format(($total_all_samping)). "</a></td>";
 					$table.="</tr>";
 					 
 				 
@@ -596,11 +657,11 @@ class dashboard_model extends CI_Model{
 		}
 		$table.="<tr>";
 				$table.="<th>TOTAL</th>";
-				$table.="<th>".number_format($total_bo01_a+$total_bo02_a)."</th>";
- 				$table.="<th>".number_format($total_rm_p_a+$total_rm_d_a)."</th>";
- 				$table.="<th>".number_format($total_phln_p_a+$total_phln_d_a)."</th>";
- 				$table.="<th>".number_format($total_pnbp_a)."</th>";
-				$table.="<th>".number_format($total_all)."</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_bo01_a+$total_bo02_a)."</th>";
+ 				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_rm_p_a+$total_rm_d_a)."</th>";
+ 				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_phln_p_a+$total_phln_d_a)."</th>";
+ 				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_pnbp_a)."</th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff'>".number_format($total_all)."</th>";
 		$table.="</tr>";	
 	 	$table.="<tbody>";
 		$table.="</table>";

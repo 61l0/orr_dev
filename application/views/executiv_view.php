@@ -90,6 +90,16 @@
  					 }
 				});	
 		}	
+		function kegiatan_prioritas(){ 
+				 $.ajax({
+					url:'<?php echo base_url(); ?>dashboard/kegiatan_prioritas/',		 
+					type:'POST',
+					data:$('#form_barang').serialize(),
+					success:function(data){ 
+ 					  	  $( "#list_data_kegiatan_prioritas" ).html(data);
+ 					 }
+				});	
+		}	
 		/*function pnbp(){
 				$('#pnbp_chart').html('<center><img style="margin-top:50px" src="<?php echo base_url();?>images/loading.gif"></center>');
 				 $.ajax({
@@ -110,7 +120,7 @@
 					success:function(data){ 
 					  	 <!-- $( "#pnbp_list" ).html(data); -->
  					 	  $( "#infodlg" ).html(data);
-	  					  $( "#infodlg" ).dialog({ title:"Info...", draggable: false, modal: true, width:'auto'});	
+	  					  $( "#infodlg" ).dialog({ title:"Info...", draggable: true, modal: true, width:'auto'});	
 					 }
 				});		
 	 	} 	
@@ -119,14 +129,18 @@
 <div id="list_data_tabular" name="lidt_data_tabular" style="display:none">
 	<div id="tabs">
   <ul>
-    <li><a href="#tabs-1">Keseluruhan</a></li>
-    <li><a href="#tabs-2">Per Group</a></li>
-   </ul>
+	    <li><a href="#tabs-1">Keseluruhan</a></li>
+   		<li><a href="#tabs-2">Per Group</a></li>
+   		<li><a href="#tabs-3" onclick="return kegiatan_prioritas()">Kegiatan Prioritas</a></li>
+    </ul>
   <div id="tabs-1">
     	<div id="list_data_tabular_keseluruhan"></div>
   </div>
   <div id="tabs-2">
     	<div id="list_data_tabular_group"></div>
+  </div>
+    <div id="tabs-3">
+    	<div id="list_data_kegiatan_prioritas"></div>
   </div>
   
 </div>

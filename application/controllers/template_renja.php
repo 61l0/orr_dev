@@ -152,10 +152,10 @@ class template_renja extends CI_Controller {
 				return false;
 			} else {
 	 			$this->template_renja_model->save_live_edit();
-			}
+ 			}
 		} else {
 				$this->template_renja_model->save_live_edit();
-		}
+ 		}
 	} 
 	function save_live_edit_komponen_input(){
 		$status_locking=$this->cek_is_open_lock('renja');

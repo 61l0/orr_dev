@@ -21,24 +21,16 @@
 	
  	<script>
    $(document).ready(function () {
-<<<<<<< HEAD
-     /*	setInterval(function() {
-=======
-     	setInterval(function() {
->>>>>>> 179225fbc5444499cd057a7803641f56589fe469
-	        $.ajax({
-				url:'<?php echo base_url();?>notifikasi/get_notifikasi/',		 
-				type:'POST',				 
-				success:function(data){ 
-				  	 $("#notifikasi_nya").html(data)
-				 }
-			});		
-<<<<<<< HEAD
-		    }, 1000);  */
-=======
+  setInterval(function() {
+           $.ajax({
+        url:'<?php echo base_url();?>notifikasi/get_notifikasi/',    
+        type:'POST',         
+        success:function(data){ 
+             $("#notifikasi_nya").html(data)
+         }
+      }); 
 		    }, 1000);  
->>>>>>> 179225fbc5444499cd057a7803641f56589fe469
-		}); 
+ 		}); 
 		function info_server(){
 					$("#info_komputer").dialog({
 					 resizable: false,

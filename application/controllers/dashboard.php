@@ -66,6 +66,10 @@ class dashboard extends CI_Controller
  		$this->load->model("dashboard_model");
  		$this->dashboard_model->belanja_non_operasional_list_group();
  	}
+ 	function kegiatan_prioritas(){
+ 		$this->load->model("dashboard_model");
+ 		$this->dashboard_model->kegiatan_prioritas();
+ 	}
  	function pnbp(){
  		$this->load->model("dashboard_model");
  		$data['series1']=$this->dashboard_model->pnbp();
