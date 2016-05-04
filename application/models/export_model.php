@@ -104,8 +104,8 @@ class export_model extends CI_Model
 			 if ($query->num_rows() > 0) {
 				foreach ($query->result() as $data_f) {
 				$class_editable="";	
-				$table.="<tr>";
 						if($data_f->tipe=="indikator"){
+							$table.="<tr class='tr_indikator'>";
 							$style_header.= " ;background-color:#A6A6A6;font-weight:bold'" ;	
 							$table.="<td $style_header class='indikator'>
 							<div style='height:10px;width:10px;background-color:#2C802C'></div></td>";
@@ -116,6 +116,7 @@ class export_model extends CI_Model
 							$button=$this->button_action($data_f->id,$data_f->tipe,$data_f->kode_direktorat_child);
 							
 						} else if($data_f->tipe=="komponen_input"){
+							$table.="<tr class='tr_komponen_input'>";
 							$check_child=$this->cek_child_komponen_input($data_f->kode,$data_f->id_data_renja);
 							if (($check_child!="true")){
 								$style_header.= " ;background-color:#fff'" ;
@@ -132,6 +133,7 @@ class export_model extends CI_Model
 								}
 							$button=$this->button_action($data_f->id,$data_f->tipe,$data_f->kode_direktorat_child);
 						}	else if($data_f->tipe=="sub_komponen_input"){
+							$table.="<tr class='tr_sub_komponen_input'>";
 							$style_header.= " ;background-color:#fff'" ;
 							$table.="<td $style_header></td>";
 							$table.="<td $style_header><div style='height:10px;width:10px;background-color:#BED446;float:right;margin-right:10px'></div></td>";

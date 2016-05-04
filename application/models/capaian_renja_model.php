@@ -2654,7 +2654,8 @@ class capaian_renja_model extends CI_Model{
 	        }	
 	        $sisa=0;
 	        $sisa=$total_kesamping-$total_all_pagu;	        
-       	 	$table.="<td  class='' style='".$style.";vertical-align:middle;'><center>".number_format($percentange,1)." % </center>  </td>"; 
+       	 	
+       	 	//$table.="<td  class='' style='".$style.";vertical-align:middle;'><center>".number_format($percentange,1)." % </center>  </td>"; 
 
 
 				        	if($sisa=="0"){
@@ -3324,9 +3325,10 @@ class capaian_renja_model extends CI_Model{
 							}	*/
 							$sisa=$total_kesamping-$total_pagu;	        
         	 	
-				        	$table_append.="<td class='' style='vertical-align:middle;font-size:10px;'>";
+				        	/*$table_append.="<td class='' style='vertical-align:middle;font-size:10px;'>";
 				        	$table_append.="<center><b>".strtoupper(trim(number_format($percentange,1)))." % </b> </center></a>";
-				        	$table_append.="</td>";
+				        	$table_append.="</td>";*/
+				        	
 				        	$color="";
 				        	if($sisa=="0"){
 				        		$color=" ; background-color:#36D195 ; ";

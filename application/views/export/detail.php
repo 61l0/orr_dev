@@ -147,6 +147,29 @@
 					 }
 				  }); 
 	}
+	function show_hide_kegiatan(){
+		var chk_indikator = ($("#chk_indikator").is(":checked"));
+		var chk_komponen_input = ($("#chk_komponen_input").is(":checked"));
+		var chk_sub_komponen_input = ($("#chk_sub_komponen_input").is(":checked"));
+
+  		if(chk_indikator){
+  			$(".tr_indikator").show();
+  		} else {
+  			$(".tr_indikator").hide();
+  		}	
+
+  		if(chk_komponen_input){
+  			$(".tr_komponen_input").show();
+  		} else {
+  			$(".tr_komponen_input").hide();
+  		}	
+
+  		if(chk_sub_komponen_input){
+  			$(".tr_sub_komponen_input").show();
+  		} else {
+  			$(".tr_sub_komponen_input").hide();
+  		}	
+	}
 	function confirm_export_excel(id){
 		$("#konfirmasi").html('Anda Ingin Melakukan Export Data Ini ? ');
 		$("#konfirmasi").dialog({
@@ -204,13 +227,17 @@
 <span id="loadingnya"></span>
   <br>
   <br>
-  <table style="width:30%;font-size:12px">
+  <table style="width:50%;font-size:12px">
     	<tr>
-    		<td><div style='height:15px;width:15px;background-color:#2C802C;float:left'></div> &nbsp; Indikator</td>
+    		<td><div style='height:15px;width:15px;background-color:#2C802C;float:left'></div> 
+    		 <input type="checkbox" checked="checked" onchange="return show_hide_kegiatan()" id="chk_indikator" class="form-control" style='background-color: #000; width:16px;height:16px;margin:0px;float:left '> &nbsp; Indikator</td>
     	 
-    		<td><div style='height:15px;;width:15px;background-color:#31BC86;float:left'></div> &nbsp;  Komponen Input</td>
+    		<td><div style='height:15px;;width:15px;background-color:#31BC86;float:left'></div>
+    		 <input type="checkbox" checked="checked" onchange="return show_hide_kegiatan()" id="chk_komponen_input" class="form-control" style='background-color: #000; width:16px;height:16px;float:left; margin:0px;'>  &nbsp;  Komponen Input </td>
     	 
-    		<td><div style='height:15px;width:15px;background-color:#BED446;float:left'></div> &nbsp;  Sub Komponen Input</td>
+    		<td><div style='height:15px;width:15px;background-color:#BED446;float:left;float:left;float:left'></div>
+    		 <input type="checkbox" checked="checked" onchange="return show_hide_kegiatan()" id="chk_sub_komponen_input" class="form-control" style='background-color: #000; width:16px;height:16px; margin:0px;;float:left'> &nbsp;  Sub Komponen Input
+    		 </td>
     	</tr>
     </table>
 <div id="tabledata">

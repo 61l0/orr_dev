@@ -18,14 +18,15 @@
    
 
 
-      		<td  colspan="12" id="td_capaian_kinerja" class="td_kinerja td_capaian_kinerja" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#31BC86;color:#fff;font-weight:bold" >CAPAIAN KINERJA</td>
+      		<td  colspan="12" id="td_capaian_kinerja" class="td_kinerja td_capaian_kinerja" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#31BC86;color:#fff;font-weight:bold" >TARGET CAPAIAN KINERJA</td>
       		 
       		<td rowspan=4  style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold"><b>TOTAL TARGET CAPAIAN KINERJA TAHUN BERJALAN <br>%</b></td>
-      		<td  colspan="20" id="td_capaian_keuangan"  class="td_keuangan td_capaian_keuangan"  style="vertical-align:middle;font-size:10px;text-align:center;background-color:#31BC86;color:#fff;font-weight:bold" >CAPAIAN KEUANGAN</td>
+      		<td  colspan="20" id="td_capaian_keuangan"  class="td_keuangan td_capaian_keuangan"  style="vertical-align:middle;font-size:10px;text-align:center;background-color:#31BC86;color:#fff;font-weight:bold" >TARGET CAPAIAN KEUANGAN</td>
 
       		<td  rowspan=4 class="td_keuangan" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold"><b>TOTAL "TARGET" CAPAIAN KEUANGAN</b></td>
-      		<td rowspan=4 class="td_keuangan" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold">
-          <b>PERSENTASE "TARGET" CAPAIAN KEUANGAN % TERHADAP PAGU RENJA</b></td>
+      		
+          <!--<td rowspan=4 class="td_keuangan" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold">
+          <b>PERSENTASE "TARGET" CAPAIAN KEUANGAN % TERHADAP PAGU RENJA</b></td>-->
 
           <td rowspan=4 class="td_keuangan" style="vertical-align:middle;font-size:10px;text-align:center;background-color:#41C5BB;color:#fff;font-weight:bold">
           <b>SISA "TARGET" CAPAIAN KEUANGAN TERHADAP "PAGU"</b></td>
