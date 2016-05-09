@@ -364,8 +364,8 @@ class dashboard_model extends CI_Model{
 			where trim(a.kode_direktorat_child)='".trim($kode_direktorat_child)."'	
 			and (a.kode_direktorat='' or a.kode_direktorat IS NULL)
 		 	and tipe='komponen_input'	
- 			and trim(a.tahun_berlaku)='".trim($tahun_anggaran)."'  and kode!='' "); 
- 			//echo $this->db->last_query().';<br>';	
+ 			and trim(a.tahun_berlaku)='".trim($tahun_anggaran)."'  and kode!='' and UPPER(kode)!='OUTPUT'"); 
+  			//echo $this->db->last_query().';<br>';	
  	 		if ($query->num_rows() > 0) {
 				foreach ($query->result() as $data) {					 
 						$total_bo1=$total_bo1+$data->bo01;
@@ -403,7 +403,7 @@ class dashboard_model extends CI_Model{
 				return $total_phln_daerah;
 			}
  		} if($field=="pnbp"){
- 			if($total_pnbp!=""){	
+  			if($total_pnbp!=""){	
 				return $total_pnbp;
 			}
  		}		 
@@ -457,7 +457,7 @@ class dashboard_model extends CI_Model{
 			where trim(a.kode_direktorat_child)='".trim($kode_direktorat_child)."'	
 			and (a.kode_direktorat='' or a.kode_direktorat IS NULL)
 		 	and tipe='indikator'	
- 			and trim(a.tahun_berlaku)='".trim($tahun_anggaran)."'  and kode!='' and kl='".$field."'"); 
+ 			and trim(a.tahun_berlaku)='".trim($tahun_anggaran)."'  and kode!='' and UPPER(kode)!='OUTPUT' and kl='".$field."'"); 
   	 		if ($query->num_rows() > 0) {
 				foreach ($query->result() as $data) {					 
 					$jumlah=$data->jumlah; 					 
@@ -480,7 +480,7 @@ class dashboard_model extends CI_Model{
 			where trim(a.kode_direktorat_child)='".trim($kode_direktorat_child)."'	
 			and (a.kode_direktorat='' or a.kode_direktorat IS NULL)
 		 	and tipe='komponen_input'	
- 			and trim(a.tahun_berlaku)='".trim($tahun_anggaran)."'  and kode!='' and kl='".$filter."'"); 
+ 			and trim(a.tahun_berlaku)='".trim($tahun_anggaran)."'  and kode!='' and UPPER(kode)!='OUTPUT' and kl='".$filter."'"); 
     	 		if ($query->num_rows() > 0) {
 				foreach ($query->result() as $data) {					 
 						$total_bo1=$total_bo1+$data->bo01;
@@ -604,7 +604,8 @@ class dashboard_model extends CI_Model{
 	 	if ($query->num_rows() > 0) {
 			foreach ($query->result() as $data) {
 					$total_all_samping=0;
-	 	
+	 				$total_pnbp=0;
+	 				$total_pnbp_a=0;
 					$total_bo01=$this->get_total_program_2('bo01',$data->kd_unit_kerja,$datenow);
 					$total_bo02=$this->get_total_program_2('bo02',$data->kd_unit_kerja,$datenow);
 					$total_bno_rm_p=$this->get_total_program_2('bno_rm_p',$data->kd_unit_kerja,$datenow);
@@ -631,11 +632,10 @@ class dashboard_model extends CI_Model{
 							$table.="<td style='vertical-align:middle'>" . number_format(($total_bno_phln_p)). "</td>";
 							$table.="<td style='vertical-align:middle'>" . number_format(($total_bno_phln_d)). "</td>";
 							$table.="<td style='vertical-align:middle'>" . number_format(($total_pnbp)). "</td>";
-							$table.="<td style='vertical-align:middle;padding:0px;background-color:#E74C3C'><a style='color:#fff' class='btn-block btn-sm btn btn-danger'>" . number_format(($total_all_samping)). "</a></td>";
-					$table.="</tr>";
-					 
-				 
-			}
+							$table.="<td style='vertical-align:middle;padding:0px;background-color:#E74C3C'><a style='color:#fff' 
+							class='btn-block btn-sm btn btn-danger'>" . number_format(($total_all_samping)). "</a></td>";
+					$table.="</tr>";	 				 
+					}
 		}
 		$table.="<tr>";
 				$table.="<th>TOTAL</th>";

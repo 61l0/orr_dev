@@ -66,7 +66,7 @@
 				});		
 	 	}
 	 	function belanja_non_operasional_list(){
-	 		 $( "#tabs" ).tabs();
+	 		$("#tabs").tabs();
 			$('#list_data_tabular_keseluruhan').html('<center><img style="margin-top:50px" src="<?php echo base_url();?>images/loading.gif"></center>');
 				 $.ajax({
 					url:'<?php echo base_url(); ?>dashboard/belanja_non_operasional_list/',		 
