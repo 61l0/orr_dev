@@ -44,13 +44,13 @@
 	}
 	function dokumen_sudah_siap(){
 			var sum_bo_01 =0;
-	var sum_bo_02 =0;
-	var sum_bno_rm_p =0;
-	var sum_bno_rm_d =0;
-	var sum_bno_phln_p =0;
-	var sum_bno_phln_d =0;
-	var sum_bno_pnbp =0;
-	var sum_pagu =0;
+			var sum_bo_02 =0;
+			var sum_bno_rm_p =0;
+			var sum_bno_rm_d =0;
+			var sum_bno_phln_p =0;
+			var sum_bno_phln_d =0;
+			var sum_bno_pnbp =0;
+			var sum_pagu =0;
 		  $( ".is_indikator_bo01" ).each(function( index ) {		
 					 	sum_bo_01=parseInt(sum_bo_01) + parseInt($(this).text().replace(/,/g, '') );
 					 });
@@ -69,7 +69,7 @@
 					 $( ".is_indikator_bno_phln_d" ).each(function( index ) {		
 					 	sum_bno_phln_d=parseInt(sum_bno_phln_d) + parseInt($(this).text().replace(/,/g, '') );
 					 });
-					 $( ".is_indikator_bno_pnbp" ).each(function( index ) {		
+					 $( ".is_indikator_pnbp" ).each(function( index ) {		
 					 	sum_bno_pnbp=parseInt(sum_bno_pnbp) + parseInt($(this).text().replace(/,/g, '') );
 					 });	
 					  $( ".is_indikator_pagu" ).each(function( index ) {		
@@ -83,7 +83,7 @@
 					 $("#f_sum_bno_rm_d").html(formatDollar(sum_bno_rm_d));
 					 $("#f_sum_bno_phln_p").html(formatDollar(sum_bno_phln_p));
 					 $("#f_sum_bno_phln_d").html(formatDollar(sum_bno_phln_d));
-					 $("#f_sum_bno_pnbp").html(formatDollar(sum_bno_pnbp));
+					 $("#f_sum_pnbp").html(formatDollar(sum_bno_pnbp));
 					 $("#f_sum_pagu").html(formatDollar(sum_pagu));
 
 					 $("#t_sum_bo_01").val((sum_bo_01));
