@@ -465,16 +465,62 @@ class dashboard_model extends CI_Model{
 			return $jumlah;
 		}	 
  	}
-
+ 	function get_total_total_duit_kegiatan_kl($kode_direktorat_child="",$tahun_anggaran="",$filter=''){
+		$jumlah=0;
+		$total_bo1=0;
+		$total_bo2=0;
+		$total_rm_pusat=0;
+		$total_rm_daerah=0;
+		$total_phln_pusat=0;
+		$total_phln_daerah=0;
+		$total_pnbp=0;	  
+		$total_semua=0;
+	 	$query=$this->db->query("select id_data_renja,kode,bo01,bo02,bno_rm_p,bno_rm_d,bno_phln_p,bno_phln_d,pnbp 
+	 		from data_template_renja  a			 
+			where trim(a.kode_direktorat_child)='".trim($kode_direktorat_child)."'	
+			and (a.kode_direktorat='' or a.kode_direktorat IS NULL)
+		 	and tipe='komponen_input'	
+ 			and trim(a.tahun_berlaku)='".trim($tahun_anggaran)."'  and kode!='' and kl='".$filter."'"); 
+    	 		if ($query->num_rows() > 0) {
+				foreach ($query->result() as $data) {					 
+						$total_bo1=$total_bo1+$data->bo01;
+						$total_bo2=$total_bo2+$data->bo02;					
+						$total_rm_pusat=$total_rm_pusat+$data->bno_rm_p;
+						$total_rm_daerah=$total_rm_daerah+$data->bno_rm_d;
+						$total_phln_pusat=$total_phln_pusat+$data->bno_phln_p;
+						$total_phln_daerah=$total_phln_daerah+$data->bno_phln_d;
+						$total_pnbp=$total_pnbp+$data->pnbp; 	
+					}
+			}	 
+ 		$total_semua=$total_bo1+$total_bo2+$total_rm_pusat+$total_rm_daerah+$total_phln_pusat+$total_phln_daerah+$total_pnbp;
+ 		return $total_semua;
+	}
 	function kegiatan_prioritas($id=""){
 		$datenow=date("Y");
+ 		$jumlah_dana_kl=0;
+		$jumlah_dana_qw=0;
+		$jumlah_dana_pl=0;
+
+ 		$total_jumlah_dana_kl=0;
+		$total_jumlah_dana_qw=0;
+		$total_jumlah_dana_pl=0;
+		
 		$table="<table class='table multimedia table-striped table-hover table-bordered'>";
 	 	$table.="<thead>";
 	 	$table.="<tr>";
 				$table.="<th></th>";
-				$table.="<th>KL </th>";
- 				$table.="<th>AP (QW)</th>";
- 				$table.="<th>AP (PL)</th>";
+				$table.="<th colspan='2'><center>KL </center></th>";
+ 				$table.="<th colspan='2'><center>AP (QW)</center></th>";
+ 				$table.="<th colspan='2'><center>AP (PL)</center></th>";
+ 		$table.="</tr>";	
+	 	$table.="<tr>";
+				$table.="<th></th>";
+				$table.="<th><center>Kegiatan</center></th>";
+ 				$table.="<th><center>Dana</center></th>";
+ 				$table.="<th><center>Kegiatan</center></th>";
+				$table.="<th><center>Dana</center></th>";
+ 				$table.="<th><center>Kegiatan</center></th>";
+ 				$table.="<th><center>Dana</center></th>";
  		$table.="</tr>";	
 	 	$table.="</thead>";
 	 	$table.="<tbody>";
@@ -493,19 +539,32 @@ class dashboard_model extends CI_Model{
 					$total_kl=$total_kl+$KL;
 					$total_qw=$total_qw+$QW;
 					$total_pl=$total_pl+$PL;
+					$jumlah_dana_kl=$this->get_total_total_duit_kegiatan_kl($data->kd_unit_kerja,date("Y"),'KL');	
+					$jumlah_dana_qw=$this->get_total_total_duit_kegiatan_kl($data->kd_unit_kerja,date("Y"),'QW');	
+					$jumlah_dana_pl=$this->get_total_total_duit_kegiatan_kl($data->kd_unit_kerja,date("Y"),'PL');	
  					$table.="<tr>";
 							$table.="<td><b>" . $data->nama_unit_kerja. "</b></td>";
 							$table.="<td style='vertical-align:middle'><center>" . number_format(($KL)). "</center></td>";
+							$table.="<td style='vertical-align:middle'><center>" . number_format(($jumlah_dana_kl)). "</center></td>";
 							$table.="<td style='vertical-align:middle'><center>" . number_format(($QW)). "</center></td>";
+							$table.="<td style='vertical-align:middle'><center>" . number_format(($jumlah_dana_qw)). "</center></td>";
 							$table.="<td style='vertical-align:middle'><center>" . number_format(($PL)). "</center></td>";
+							$table.="<td style='vertical-align:middle'><center>" . number_format(($jumlah_dana_pl)). "</center></td>";
  					$table.="</tr>";					 
+ 					 		$total_jumlah_dana_kl=$total_jumlah_dana_kl+$jumlah_dana_kl;
+							$total_jumlah_dana_qw=$total_jumlah_dana_qw+$jumlah_dana_qw;
+							$total_jumlah_dana_pl=$total_jumlah_dana_pl+$jumlah_dana_pl;
+
 			}
 		}
 		$table.="<tr>";
 				$table.="<th>TOTAL</th>";
-				$table.="<th style='background-color:#8BBC21 !important;color:#fff'><center>".number_format($total_kl)."</center></th>";
-				$table.="<th style='background-color:#8BBC21 !important;color:#fff'><center>".number_format($total_qw)."</center></th>";
-				$table.="<th style='background-color:#8BBC21 !important;color:#fff'><center>".number_format($total_pl)."</center></th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff;text-align:center'><center class='badge'>".number_format($total_kl)."</center></th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff;text-align:center'><center>".number_format($total_jumlah_dana_kl)."</center></th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff;text-align:center'><center class='badge'>".number_format($total_qw)."</center></th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff;text-align:center'><center>".number_format($total_jumlah_dana_qw)."</center></th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff;text-align:center'><center class='badge'>".number_format($total_pl)."</center></th>";
+				$table.="<th style='background-color:#8BBC21 !important;color:#fff;text-align:center'><center>".number_format($total_jumlah_dana_pl)."</center></th>";
 		$table.="</tr>";	
 	 	$table.="<tbody>";
 		$table.="</table>";
