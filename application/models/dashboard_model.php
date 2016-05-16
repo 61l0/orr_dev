@@ -279,7 +279,7 @@ class dashboard_model extends CI_Model{
  		$jumlah=0;
 		$query=$this->db->query("select * from data_template_renja  a			 
 			where a.tahun_berlaku like '%".$tahun_anggaran."%' and a.kode_direktorat_child like'%".$kode_direktorat."%'	
-			and a.tipe='komponen_input' and a.kode!='OUTPUT'");	 
+			and a.tipe='komponen_input' and UPPER(a.kode)!='OUTPUT'");	 
   			if ($query->num_rows() > 0) {
 			foreach ($query->result() as $data) {
 				 $jumlah=$jumlah+1;
@@ -302,7 +302,7 @@ class dashboard_model extends CI_Model{
 			where trim(a.kode_direktorat_child)='".trim($kode_direktorat_child)."'	
 			and (a.kode_direktorat='' or a.kode_direktorat IS NULL)
 		 	and tipe='komponen_input'	
- 			and trim(a.tahun_berlaku)='".trim($tahun_anggaran)."'  and kode!='' "); 
+ 			and trim(a.tahun_berlaku)='".trim($tahun_anggaran)."'  and kode!='' and UPPER(a.kode)!='OUTPUT'"); 
     	 		if ($query->num_rows() > 0) {
 				foreach ($query->result() as $data) {					 
 						$total_bo1=$total_bo1+$data->bo01;
@@ -516,11 +516,11 @@ class dashboard_model extends CI_Model{
 	 	$table.="<tr>";
 				$table.="<th></th>";
 				$table.="<th><center>Kegiatan</center></th>";
- 				$table.="<th><center>Dana</center></th>";
+ 				$table.="<th><center>Alokasi Dana</center></th>";
  				$table.="<th><center>Kegiatan</center></th>";
-				$table.="<th><center>Dana</center></th>";
+				$table.="<th><center>Alokasi Dana</center></th>";
  				$table.="<th><center>Kegiatan</center></th>";
- 				$table.="<th><center>Dana</center></th>";
+ 				$table.="<th><center>Alokasi Dana</center></th>";
  		$table.="</tr>";	
 	 	$table.="</thead>";
 	 	$table.="<tbody>";
